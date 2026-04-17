@@ -117,6 +117,15 @@ export default function Game() {
       3,
     );
 
+    const playerWithShield = {
+      ...runState.player,
+      shield: calculateShield(
+        runState.player.pokemon.stats.defense,
+        runState.player.pokemon.stats.specialDefense,
+        runState.player.level,
+      ),
+    };
+
     const enemy: EnemyPokemon = {
       pokemon: enemyPokemon,
       level: node.level,
@@ -133,7 +142,8 @@ export default function Game() {
       energy: 3,
     };
 
-    dispatch({ type: "INIT_BATTLE", player: runState.player, enemy });
+    updatePlayer(playerWithShield);
+    dispatch({ type: "INIT_BATTLE", player: playerWithShield, enemy });
     setRunPhase("battle");
     setLoading(false);
   };
