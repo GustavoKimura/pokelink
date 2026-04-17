@@ -77,7 +77,8 @@ export interface BattleState {
     | "rest"
     | "boss"
     | "victory"
-    | "defeat";
+    | "defeat"
+    | "enemy_turn";
   player: PlayerPokemon | null;
   enemies: EnemyPokemon[];
   turnOrder: (PlayerPokemon | EnemyPokemon)[];
