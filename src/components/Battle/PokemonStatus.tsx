@@ -1,14 +1,38 @@
+import { useState } from "react";
 import type { PlayerPokemon, EnemyPokemon } from "../../types";
+import DiscardPileModal from "./DiscardPileModal";
 
 interface PokemonStatusProps {
   pokemon: PlayerPokemon | EnemyPokemon;
   isPlayer: boolean;
 }
 
+const typeColors: Record<string, string> = {
+  Normal: "bg-[#A8A878]",
+  Fogo: "bg-[#F08030]",
+  Água: "bg-[#6890F0]",
+  Elétrico: "bg-[#F8D030]",
+  Planta: "bg-[#78C850]",
+  Gelo: "bg-[#98D8D8]",
+  Lutador: "bg-[#C03028]",
+  Venenoso: "bg-[#A040A0]",
+  Terra: "bg-[#E0C068]",
+  Voador: "bg-[#A890F0]",
+  Psíquico: "bg-[#F85888]",
+  Inseto: "bg-[#A8B820]",
+  Pedra: "bg-[#B8A038]",
+  Fantasma: "bg-[#705898]",
+  Dragão: "bg-[#7038F8]",
+  Sombrio: "bg-[#705848]",
+  Aço: "bg-[#B8B8D0]",
+  Fada: "bg-[#E29DE5]",
+};
+
 export default function PokemonStatus({
   pokemon,
   isPlayer,
 }: PokemonStatusProps) {
+  const [showDiscard, setShowDiscard] = useState(false);
   const hpPercent = (pokemon.currentHp / pokemon.maxHp) * 100;
   const sprite = isPlayer
     ? pokemon.pokemon.sprites.animated.back
@@ -61,20 +85,38 @@ export default function PokemonStatus({
             </p>
           )}
 
-          <div className="flex gap-1">
+          <div className="flex gap-1 mb-2">
             {pokemon.pokemon.types.map((type) => (
               <span
                 key={type}
-                className="text-xs px-2 py-0.5 bg-gray-700 rounded-full"
+                className={`text-xs px-2 py-0.5 rounded-full ${typeColors[type] || "bg-gray-700"}`}
               >
                 {type}
               </span>
             ))}
           </div>
 
-          <p className="text-sm mt-2">⚡ Energia: {pokemon.energy}/3</p>
+          <div className="flex items-center gap-4 text-sm">
+            <p>⚡ {pokemon.energy}/3</p>
+            <p>🎴 {pokemon.drawPile.length}</p>
+            <p>🃏 {pokemon.hand.length}</p>
+            <button
+              onClick={() => setShowDiscard(true)}
+              className="hover:text-gray-300 underline decoration-dotted"
+            >
+              🗑️ {pokemon.discardPile.length}
+            </button>
+          </div>
         </div>
       </div>
+
+      {showDiscard && (
+        <DiscardPileModal
+          discardPile={pokemon.discardPile}
+          pokemonName={pokemon.pokemon.name}
+          onClose={() => setShowDiscard(false)}
+        />
+      )}
     </div>
   );
 }

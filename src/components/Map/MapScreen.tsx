@@ -149,6 +149,7 @@ export default function MapScreen({
           nodesConnectable={false}
           elementsSelectable={false}
           elevateEdgesOnSelect={false}
+          proOptions={{ hideAttribution: true }}
         >
           <Background color="#374151" gap={16} />
           <Controls showFitView={false} showInteractive={false} />

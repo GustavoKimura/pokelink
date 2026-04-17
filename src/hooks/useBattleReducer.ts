@@ -1,7 +1,11 @@
 import { useReducer } from "react";
 import type { BattleState, PlayerPokemon, EnemyPokemon, Card } from "../types";
 import { drawCards } from "../utils/cardUtils";
-import { calculateDamage, calculateShield } from "../utils/battleUtils";
+import {
+  calculateDamage,
+  calculateShield,
+  getEffectiveness,
+} from "../utils/battleUtils";
 
 type BattleAction =
   | { type: "INIT_BATTLE"; player: PlayerPokemon; enemy: EnemyPokemon }
@@ -102,14 +106,17 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 
     case "EXECUTE_ATTACK": {
       const { attacker, defender, move } = action;
-      const damage = calculateDamage(attacker, move);
+      const effectiveness = getEffectiveness(move.type, defender.pokemon.types);
+      const rawDamage = calculateDamage(attacker, move);
+      const damage = Math.floor(rawDamage * effectiveness);
 
       let remainingDamage = damage;
       let newShield = defender.shield;
+      let shieldAbsorbed = 0;
       if (newShield > 0) {
-        const shieldAbsorb = Math.min(newShield, remainingDamage);
-        newShield -= shieldAbsorb;
-        remainingDamage -= shieldAbsorb;
+        shieldAbsorbed = Math.min(newShield, remainingDamage);
+        newShield -= shieldAbsorbed;
+        remainingDamage -= shieldAbsorbed;
       }
       const newHp = Math.max(0, defender.currentHp - remainingDamage);
 
@@ -131,13 +138,17 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
         );
       }
 
+      let effectivenessMessage = "";
+      if (effectiveness > 1) effectivenessMessage = " Foi super efetivo!";
+      if (effectiveness < 1 && effectiveness > 0)
+        effectivenessMessage = " Não foi muito efetivo...";
+      if (effectiveness === 0) effectivenessMessage = " Não afetou o alvo!";
+
       const shieldMessage =
-        defender.shield > 0 && damage > newShield + remainingDamage
-          ? ` (escudo absorveu ${damage - remainingDamage})`
-          : "";
+        shieldAbsorbed > 0 ? ` (Escudo absorveu ${shieldAbsorbed})` : "";
       const newLog = [
         ...state.log,
-        `${attacker.pokemon.name} usou ${move.name} e causou ${damage} de dano${shieldMessage}!`,
+        `${attacker.pokemon.name} usou ${move.name} e causou ${damage} de dano${shieldMessage}!${effectivenessMessage}`,
       ];
 
       const moveIndex = attacker.hand.findIndex((c) => c.id === move.id);

@@ -10,24 +10,24 @@ interface CardHandProps {
 }
 
 const typeColors: Record<string, string> = {
-  normal: "bg-gray-400",
-  fire: "bg-red-500",
-  water: "bg-blue-500",
-  electric: "bg-yellow-400",
-  grass: "bg-green-500",
-  ice: "bg-cyan-300",
-  fighting: "bg-orange-700",
-  poison: "bg-purple-500",
-  ground: "bg-yellow-700",
-  flying: "bg-indigo-300",
-  psychic: "bg-pink-500",
-  bug: "bg-lime-500",
-  rock: "bg-yellow-600",
-  ghost: "bg-purple-700",
-  dragon: "bg-indigo-700",
-  dark: "bg-gray-700",
-  steel: "bg-gray-400",
-  fairy: "bg-pink-300",
+  Normal: "bg-[#A8A878]",
+  Fogo: "bg-[#F08030]",
+  Água: "bg-[#6890F0]",
+  Elétrico: "bg-[#F8D030]",
+  Planta: "bg-[#78C850]",
+  Gelo: "bg-[#98D8D8]",
+  Lutador: "bg-[#C03028]",
+  Venenoso: "bg-[#A040A0]",
+  Terra: "bg-[#E0C068]",
+  Voador: "bg-[#A890F0]",
+  Psíquico: "bg-[#F85888]",
+  Inseto: "bg-[#A8B820]",
+  Pedra: "bg-[#B8A038]",
+  Fantasma: "bg-[#705898]",
+  Dragão: "bg-[#7038F8]",
+  Sombrio: "bg-[#705848]",
+  Aço: "bg-[#B8B8D0]",
+  Fada: "bg-[#E29DE5]",
 };
 
 export default function CardHand({
@@ -38,46 +38,37 @@ export default function CardHand({
   onSelectCard,
 }: CardHandProps) {
   return (
-    <div>
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="text-lg font-semibold">Sua Mão ({cards.length})</h3>
-        <span className="text-sm bg-blue-600 px-3 py-1 rounded-full">
-          ⚡ {energy}/3
-        </span>
-      </div>
+    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      {cards.map((card, index) => {
+        const canAfford = energy >= card.energyCost;
+        const bgColor = typeColors[card.type] || "bg-gray-500";
+        const displayDamage = calculateCardDisplayDamage(player, card);
+        const damageIcon = card.damageClass === "physical" ? "👊" : "✨";
 
-      <div className="flex gap-2 overflow-x-auto pb-2">
-        {cards.map((card, index) => {
-          const canAfford = energy >= card.energyCost;
-          const bgColor = typeColors[card.type] || "bg-gray-500";
-          const displayDamage = calculateCardDisplayDamage(player, card);
-          const damageIcon = card.damageClass === "physical" ? "👊" : "✨";
-
-          return (
-            <button
-              key={`${card.id}-${index}`}
-              onClick={() => {
-                if (canPlay && canAfford) {
-                  onSelectCard(card);
-                }
-              }}
-              disabled={!canPlay || !canAfford}
-              className={`
-                ${bgColor} text-white rounded-lg p-3 min-w-30 text-left
-                ${canPlay && canAfford ? "hover:scale-105 cursor-pointer" : "opacity-50 cursor-not-allowed"}
-                transition-transform
-              `}
-            >
-              <h4 className="font-bold capitalize">{card.name}</h4>
-              <p className="text-sm">
-                {damageIcon} {displayDamage}
-              </p>
-              <p className="text-sm">⚡ {card.energyCost}</p>
-              <p className="text-xs mt-1">{card.type}</p>
-            </button>
-          );
-        })}
-      </div>
+        return (
+          <button
+            key={`${card.id}-${index}`}
+            onClick={() => {
+              if (canPlay && canAfford) {
+                onSelectCard(card);
+              }
+            }}
+            disabled={!canPlay || !canAfford}
+            className={`
+              ${bgColor} text-white rounded-lg p-3 min-w-30 text-left
+              ${canPlay && canAfford ? "hover:scale-105 cursor-pointer" : "opacity-50 cursor-not-allowed"}
+              transition-transform
+            `}
+          >
+            <h4 className="font-bold capitalize">{card.name}</h4>
+            <p className="text-sm">
+              {damageIcon} {displayDamage}
+            </p>
+            <p className="text-sm">⚡ {card.energyCost}</p>
+            <p className="text-xs mt-1">{card.type}</p>
+          </button>
+        );
+      })}
     </div>
   );
 }

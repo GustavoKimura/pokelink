@@ -28,6 +28,27 @@ interface ApiPokemon {
   }[];
 }
 
+const typeTranslation: Record<string, string> = {
+  normal: "Normal",
+  fire: "Fogo",
+  water: "Água",
+  electric: "Elétrico",
+  grass: "Planta",
+  ice: "Gelo",
+  fighting: "Lutador",
+  poison: "Venenoso",
+  ground: "Terra",
+  flying: "Voador",
+  psychic: "Psíquico",
+  bug: "Inseto",
+  rock: "Pedra",
+  ghost: "Fantasma",
+  dragon: "Dragão",
+  dark: "Sombrio",
+  steel: "Aço",
+  fairy: "Fada",
+};
+
 export function transformApiPokemon(apiData: ApiPokemon): Pokemon {
   const getStat = (name: string): number => {
     const stat = apiData.stats.find((s) => s.stat.name === name);
@@ -36,8 +57,10 @@ export function transformApiPokemon(apiData: ApiPokemon): Pokemon {
 
   return {
     id: apiData.id,
-    name: apiData.name,
-    types: apiData.types.map((t) => t.type.name),
+    name: apiData.name.charAt(0).toUpperCase() + apiData.name.slice(1),
+    types: apiData.types.map(
+      (t) => typeTranslation[t.type.name] || t.type.name,
+    ),
     sprites: {
       front: apiData.sprites.front_default || "",
       back: apiData.sprites.back_default || "",

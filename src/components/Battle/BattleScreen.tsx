@@ -98,7 +98,7 @@ export default function BattleScreen({
           <PokemonStatus pokemon={currentEnemy} isPlayer={false} />
           <button
             onClick={() => setShowEnemyDeck(true)}
-            className="absolute top-0 right-0 p-1 bg-gray-700 rounded hover:bg-gray-600"
+            className="absolute top-2 right-2 p-1 bg-gray-700 rounded hover:bg-gray-600 z-10"
             title="Ver baralho do inimigo"
           >
             <BookOpen className="w-4 h-4" />
@@ -113,7 +113,7 @@ export default function BattleScreen({
           <PokemonStatus pokemon={player} isPlayer />
           <button
             onClick={() => setShowPlayerDeck(true)}
-            className="absolute top-0 right-0 p-1 bg-gray-700 rounded hover:bg-gray-600"
+            className="absolute top-2 right-2 p-1 bg-gray-700 rounded hover:bg-gray-600 z-10"
             title="Ver seu baralho"
           >
             <BookOpen className="w-4 h-4" />
@@ -152,7 +152,7 @@ export default function BattleScreen({
       )}
 
       <div className="bg-gray-800/95 p-4 border-t border-gray-700">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto flex flex-col items-center">
           <CardHand
             player={player}
             cards={player.hand}
@@ -176,22 +176,16 @@ export default function BattleScreen({
 
       {showPlayerDeck && (
         <DeckViewerModal
-          title="Seu Baralho"
+          title="Seu Baralho da Run"
           runDeck={player.runDeck}
-          currentDeckCount={player.drawPile.length}
-          currentDiscardPile={player.discardPile}
-          handCount={player.hand.length}
           onClose={() => setShowPlayerDeck(false)}
         />
       )}
 
       {showEnemyDeck && (
         <DeckViewerModal
-          title={`Baralho de ${currentEnemy.pokemon.name}`}
+          title={`Baralho da Run - ${currentEnemy.pokemon.name}`}
           runDeck={currentEnemy.runDeck}
-          currentDeckCount={currentEnemy.drawPile.length}
-          currentDiscardPile={currentEnemy.discardPile}
-          handCount={currentEnemy.hand.length}
           onClose={() => setShowEnemyDeck(false)}
         />
       )}
