@@ -1,6 +1,10 @@
 import type { PlayerPokemon, EnemyPokemon, Card, Pokemon } from "../types";
-
-const DAMAGE_SCALING_FACTOR = 0.038;
+import {
+  DAMAGE_SCALING_FACTOR,
+  SHIELD_DIVISOR,
+  SHIELD_BASE,
+  XP_BASE,
+} from "../config/gameConfig";
 
 const attackChart: Record<string, Record<string, number>> = {
   normal: {
@@ -375,7 +379,7 @@ export function calculateShield(
   level: number,
 ): number {
   const maxDefense = Math.max(defense, specialDefense);
-  return Math.floor((maxDefense * level) / 18) + 4;
+  return Math.floor((maxDefense * level) / SHIELD_DIVISOR) + SHIELD_BASE;
 }
 
 export function calculateDamage(
@@ -408,14 +412,8 @@ export function calculateCardDisplayDamage(
   return Math.floor(baseDamage * DAMAGE_SCALING_FACTOR);
 }
 
-export function calculateXpGain(
-  enemyLevel: number,
-  playerLevel: number,
-): number {
-  const base = enemyLevel * 40;
-  const diff = enemyLevel - playerLevel;
-  const multiplier = diff > 0 ? 1 + diff * 0.15 : 1;
-  return Math.floor(base * multiplier);
+export function calculateXpGain(enemyLevel: number): number {
+  return enemyLevel * XP_BASE;
 }
 
 export function getEffectiveness(

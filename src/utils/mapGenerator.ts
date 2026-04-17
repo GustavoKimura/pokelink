@@ -1,16 +1,16 @@
 import { v4 as uuidv4 } from "uuid";
 import type { MapNode } from "../types/map";
-
-const WILD_POKEMON_IDS = [
-  10, 13, 16, 19, 21, 23, 25, 27, 29, 32, 35, 37, 39, 41, 43, 46, 48, 50, 52,
-  54,
-];
-const BOSS_ID = 6;
+import {
+  MAP_ROWS,
+  MAP_COLS,
+  BOSS_ID,
+  WILD_POKEMON_IDS,
+} from "../config/gameConfig";
 
 export function generateMap(): MapNode[] {
   const nodes: MapNode[] = [];
-  const rows = 10;
-  const cols = 4;
+  const rows = MAP_ROWS;
+  const cols = MAP_COLS;
 
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
@@ -58,11 +58,21 @@ export function generateMap(): MapNode[] {
     }
   }
 
+  const bossNode = nodes.find((n) => n.type === "boss");
+  if (!bossNode) return nodes;
+
   for (let row = 0; row < rows - 1; row++) {
     const currentRowY = (rows - 1 - row) * 150 + 100;
     const nextRowY = (rows - 1 - (row + 1)) * 150 + 100;
     const currentRowNodes = nodes.filter((n) => n.position.y === currentRowY);
     const nextRowNodes = nodes.filter((n) => n.position.y === nextRowY);
+
+    if (row === rows - 2) {
+      for (const node of currentRowNodes) {
+        node.connections = [bossNode.id];
+      }
+      continue;
+    }
 
     for (const node of currentRowNodes) {
       const currentCol = Math.floor((node.position.x - 100) / 200);

@@ -6,6 +6,7 @@ import {
   calculateShield,
   getEffectiveness,
 } from "../utils/battleUtils";
+import { CARDS_PER_TURN, MAX_ENERGY } from "../config/gameConfig";
 
 type BattleAction =
   | { type: "INIT_BATTLE"; player: PlayerPokemon; enemy: EnemyPokemon }
@@ -36,13 +37,13 @@ function prepareForTurnStart<T extends PlayerPokemon | EnemyPokemon>(
     drawn: newHand,
     newDeck: newDrawPile,
     newDiscard: finalDiscard,
-  } = drawCards(unit.drawPile, newDiscard, 3);
+  } = drawCards(unit.drawPile, newDiscard, CARDS_PER_TURN);
   return {
     ...unit,
     drawPile: newDrawPile,
     hand: newHand,
     discardPile: finalDiscard,
-    energy: 3,
+    energy: MAX_ENERGY,
   };
 }
 

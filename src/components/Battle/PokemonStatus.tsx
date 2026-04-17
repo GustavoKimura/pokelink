@@ -45,7 +45,7 @@ export default function PokemonStatus({
         <img
           src={sprite}
           alt={pokemon.pokemon.name}
-          className="w-24 h-24 object-contain"
+          className="w-24 h-24 object-contain pixelated"
           onError={(e) => {
             e.currentTarget.src = isPlayer
               ? pokemon.pokemon.sprites.back

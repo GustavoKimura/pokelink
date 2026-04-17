@@ -158,7 +158,7 @@ export default function StarterSelection() {
                       <img
                         src={pokemon.sprites.animated.front}
                         alt={starter.displayName}
-                        className="w-32 h-32 object-contain"
+                        className="w-32 h-32 object-contain pixelated"
                         onError={(e) => {
                           e.currentTarget.src = pokemon.sprites.front;
                         }}

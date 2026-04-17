@@ -23,13 +23,13 @@ export default function EvolutionModal({
           <img
             src={oldPokemon.sprites.animated.front}
             alt={oldPokemon.name}
-            className="w-24 h-24"
+            className="w-24 h-24 pixelated"
           />
           <span className="text-4xl">→</span>
           <img
             src={newPokemon.sprites.animated.front}
             alt={newPokemon.name}
-            className="w-24 h-24"
+            className="w-24 h-24 pixelated"
           />
         </div>
 

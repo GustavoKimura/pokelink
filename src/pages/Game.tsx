@@ -29,6 +29,21 @@ import VictoryModal from "../components/Modals/VictoryModal";
 import GameOverModal from "../components/Modals/GameOverModal";
 import RestModal from "../components/Modals/RestModal";
 import EvolutionModal from "../components/Modals/EvolutionModal";
+import {
+  CARDS_PER_TURN,
+  MAX_ENERGY,
+  DEFAULT_REVIVES,
+  REST_HEAL_PERCENT,
+  VICTORY_XP,
+} from "../config/gameConfig";
+
+interface LevelUpStep {
+  type: "level" | "evolution";
+  newLevel: number;
+  options?: Card[];
+  evolvedPokemon?: Pokemon;
+  previousStats: PreviousStats;
+}
 
 export default function Game() {
   const location = useLocation();
@@ -48,6 +63,7 @@ export default function Game() {
   const [previousStats, setPreviousStats] = useState<PreviousStats | null>(
     null,
   );
+  const [levelUpQueue, setLevelUpQueue] = useState<LevelUpStep[]>([]);
   const initialized = useRef(false);
 
   const {
@@ -79,7 +95,7 @@ export default function Game() {
     const { drawn: initialHand, newDeck: initialDrawPile } = drawCards(
       shuffledDrawPile,
       [],
-      3,
+      CARDS_PER_TURN,
     );
 
     const player: PlayerPokemon = {
@@ -96,8 +112,8 @@ export default function Game() {
       drawPile: initialDrawPile,
       hand: initialHand,
       discardPile: [],
-      energy: 3,
-      revives: 1,
+      energy: MAX_ENERGY,
+      revives: DEFAULT_REVIVES,
       runXp: 0,
       xpToNextLevel: getXpForNextLevel(1),
     };
@@ -118,7 +134,7 @@ export default function Game() {
     if (!node || !runState.player) return;
 
     if (node.type === "rest") {
-      const heal = Math.floor(runState.player.currentHp * 0.5);
+      const heal = Math.floor(runState.player.currentHp * REST_HEAL_PERCENT);
       const newHp = Math.min(
         runState.player.maxHp,
         runState.player.currentHp + heal,
@@ -139,7 +155,7 @@ export default function Game() {
     const { drawn: enemyHand, newDeck: enemyDrawPile } = drawCards(
       shuffledEnemyDraw,
       [],
-      3,
+      CARDS_PER_TURN,
     );
 
     const playerRunDeck = runState.player.runDeck;
@@ -147,7 +163,7 @@ export default function Game() {
     const { drawn: newHand, newDeck: newDrawPile } = drawCards(
       shuffledPlayerDraw,
       [],
-      3,
+      CARDS_PER_TURN,
     );
 
     const playerWithShield = {
@@ -155,7 +171,7 @@ export default function Game() {
       drawPile: newDrawPile,
       hand: newHand,
       discardPile: [],
-      energy: 3,
+      energy: MAX_ENERGY,
       shield: calculateShield(
         runState.player.pokemon.stats.defense,
         runState.player.pokemon.stats.specialDefense,
@@ -177,13 +193,47 @@ export default function Game() {
       drawPile: enemyDrawPile,
       hand: enemyHand,
       discardPile: [],
-      energy: 3,
+      energy: MAX_ENERGY,
     };
 
     updatePlayer(playerWithShield);
     dispatch({ type: "INIT_BATTLE", player: playerWithShield, enemy });
     setRunPhase("battle");
     setLoading(false);
+  };
+
+  const processNextLevelUp = useCallback(() => {
+    if (levelUpQueue.length === 0) {
+      completeNode(runState.currentNodeId!);
+      setRunPhase("map");
+      return;
+    }
+    const [step, ...rest] = levelUpQueue;
+    setLevelUpQueue(rest);
+    if (step.type === "evolution") {
+      setEvolvedPokemon(step.evolvedPokemon!);
+      setShowEvolution(true);
+    } else {
+      setPreviousStats(step.previousStats);
+      setLevelUpOptions(step.options || []);
+      setShowLevelUp(true);
+    }
+  }, [levelUpQueue, completeNode, setRunPhase, runState.currentNodeId]);
+
+  const handleLevelUpComplete = (selectedCard?: Card) => {
+    if (!runState.player) return;
+    const updatedPlayer = { ...runState.player };
+    if (selectedCard) {
+      updatedPlayer.runDeck = [...updatedPlayer.runDeck, selectedCard];
+    }
+    updatePlayer(updatedPlayer);
+    setShowLevelUp(false);
+    processNextLevelUp();
+  };
+
+  const handleEvolutionComplete = () => {
+    setShowEvolution(false);
+    processNextLevelUp();
   };
 
   const handleBattleEnd = async (victory: boolean) => {
@@ -201,139 +251,117 @@ export default function Game() {
     );
     if (!currentNode) return;
 
-    const xpGain = calculateXpGain(currentNode.level, finalPlayer.level);
-    const updatedPlayer = { ...finalPlayer, runXp: finalPlayer.runXp + xpGain };
+    const xpGain = calculateXpGain(currentNode.level);
+    let updatedPlayer = { ...finalPlayer, runXp: finalPlayer.runXp + xpGain };
 
-    const levelUpResult = checkLevelUp(
-      updatedPlayer.runXp,
-      updatedPlayer.level,
-    );
-    if (levelUpResult) {
-      const sampleMove: Card = {
-        id: "sample",
-        name: "Sample",
-        type: "normal",
-        power: 40,
-        pp: 35,
-        energyCost: 1,
-        description: "",
-        damageClass: "physical",
-      };
-      const oldAttackPower = calculateCardDisplayDamage(
-        updatedPlayer,
-        sampleMove,
-      );
-      const oldMaxShield = calculateShield(
-        updatedPlayer.pokemon.stats.defense,
-        updatedPlayer.pokemon.stats.specialDefense,
-        updatedPlayer.level,
-      );
-
-      const oldStats: PreviousStats = {
-        level: updatedPlayer.level,
-        maxHp: updatedPlayer.maxHp,
-        attackPower: oldAttackPower,
-        speed: updatedPlayer.pokemon.stats.speed,
-        shield: oldMaxShield,
-      };
-      setPreviousStats(oldStats);
-
-      updatedPlayer.level = levelUpResult.newLevel;
-      updatedPlayer.runXp = levelUpResult.remainingXp;
-      const newMaxHp = calculateMaxHp(
-        updatedPlayer.pokemon.stats.hp,
-        updatedPlayer.level,
-      );
-      const hpRatio = updatedPlayer.currentHp / updatedPlayer.maxHp;
-      updatedPlayer.maxHp = newMaxHp;
-      updatedPlayer.currentHp = Math.max(1, Math.floor(newMaxHp * hpRatio));
-      updatedPlayer.xpToNextLevel = getXpForNextLevel(updatedPlayer.level);
-
-      const evolution = await checkEvolution(
-        updatedPlayer.pokemon,
-        updatedPlayer.level,
-      );
-      if (evolution) {
-        updatedPlayer.pokemon = evolution;
-        updatedPlayer.maxHp = calculateMaxHp(
-          evolution.stats.hp,
-          updatedPlayer.level,
-        );
-        updatedPlayer.currentHp = updatedPlayer.maxHp;
-        updatedPlayer.shield = calculateShield(
-          evolution.stats.defense,
-          evolution.stats.specialDefense,
-          updatedPlayer.level,
-        );
-        setEvolvedPokemon(evolution);
-        setShowEvolution(true);
-        updatePlayer(updatedPlayer);
-        completeNode(runState.currentNodeId!);
-        return;
-      }
-
-      const options = await getLevelUpMoveOptions(
-        updatedPlayer.pokemon,
-        updatedPlayer.level,
-      );
-      updatePlayer(updatedPlayer);
-
-      setLevelUpOptions(options);
-      setShowLevelUp(true);
-      setRunPhase("map");
-      return;
-    }
-
-    updatePlayer(updatedPlayer);
-    completeNode(runState.currentNodeId!);
-
-    if (currentNode.type === "boss") {
-      setShowVictory(true);
-      setRunPhase("victory");
-    } else {
-      setCurrentNode(null);
-      setRunPhase("map");
-    }
-  };
-
-  const handleLevelUpSelect = (card: Card) => {
-    if (!runState.player) return;
-
-    const updatedPlayer = {
-      ...runState.player,
-      runDeck: [...runState.player.runDeck, card],
+    const sampleMove: Card = {
+      id: "sample",
+      name: "Sample",
+      type: "normal",
+      power: 40,
+      pp: 35,
+      energyCost: 1,
+      description: "",
+      damageClass: "physical",
     };
 
+    const steps: LevelUpStep[] = [];
+    let currentPlayer = updatedPlayer;
+
+    while (true) {
+      const levelUpResult = checkLevelUp(
+        currentPlayer.runXp,
+        currentPlayer.level,
+      );
+      if (!levelUpResult) break;
+
+      const oldLevel = currentPlayer.level;
+      const newLevel = levelUpResult.newLevel;
+      const remainingXp = levelUpResult.remainingXp;
+
+      const oldStats: PreviousStats = {
+        level: oldLevel,
+        maxHp: currentPlayer.maxHp,
+        attackPower: calculateCardDisplayDamage(currentPlayer, sampleMove),
+        speed: currentPlayer.pokemon.stats.speed,
+        shield: calculateShield(
+          currentPlayer.pokemon.stats.defense,
+          currentPlayer.pokemon.stats.specialDefense,
+          currentPlayer.level,
+        ),
+      };
+
+      currentPlayer = {
+        ...currentPlayer,
+        level: newLevel,
+        runXp: remainingXp,
+      };
+
+      const evolution = await checkEvolution(currentPlayer.pokemon, newLevel);
+      if (evolution) {
+        currentPlayer.pokemon = evolution;
+        currentPlayer.maxHp = calculateMaxHp(evolution.stats.hp, newLevel);
+        currentPlayer.currentHp = currentPlayer.maxHp;
+        currentPlayer.shield = calculateShield(
+          evolution.stats.defense,
+          evolution.stats.specialDefense,
+          newLevel,
+        );
+        currentPlayer.xpToNextLevel = getXpForNextLevel(newLevel);
+        steps.push({
+          type: "evolution",
+          newLevel,
+          evolvedPokemon: evolution,
+          previousStats: oldStats,
+        });
+      } else {
+        const newMaxHp = calculateMaxHp(
+          currentPlayer.pokemon.stats.hp,
+          newLevel,
+        );
+        const hpRatio = currentPlayer.currentHp / currentPlayer.maxHp;
+        currentPlayer.maxHp = newMaxHp;
+        currentPlayer.currentHp = Math.max(1, Math.floor(newMaxHp * hpRatio));
+        currentPlayer.shield = calculateShield(
+          currentPlayer.pokemon.stats.defense,
+          currentPlayer.pokemon.stats.specialDefense,
+          newLevel,
+        );
+        currentPlayer.xpToNextLevel = getXpForNextLevel(newLevel);
+
+        const options = await getLevelUpMoveOptions(
+          currentPlayer.pokemon,
+          newLevel,
+        );
+        steps.push({
+          type: "level",
+          newLevel,
+          options,
+          previousStats: oldStats,
+        });
+      }
+    }
+
+    updatedPlayer = currentPlayer;
     updatePlayer(updatedPlayer);
-    completeNode(runState.currentNodeId!);
 
-    setShowLevelUp(false);
-    setLevelUpOptions([]);
-    setCurrentNode(null);
-    setRunPhase("map");
-  };
-
-  const handleLevelUpSkip = () => {
-    if (!runState.player) return;
-
-    updatePlayer(runState.player);
-    completeNode(runState.currentNodeId!);
-
-    setShowLevelUp(false);
-    setLevelUpOptions([]);
-    setCurrentNode(null);
-    setRunPhase("map");
+    if (steps.length > 0) {
+      setLevelUpQueue(steps);
+      processNextLevelUp();
+      setRunPhase("map");
+    } else {
+      completeNode(runState.currentNodeId!);
+      if (currentNode.type === "boss") {
+        setShowVictory(true);
+        setRunPhase("victory");
+      } else {
+        setRunPhase("map");
+      }
+    }
   };
 
   const handleRestContinue = () => {
     setShowRest(false);
-    setCurrentNode(null);
-    setRunPhase("map");
-  };
-
-  const handleEvolutionConfirm = () => {
-    setShowEvolution(false);
-    setEvolvedPokemon(null);
     setCurrentNode(null);
     setRunPhase("map");
   };
@@ -356,6 +384,7 @@ export default function Game() {
         <MapScreen
           nodes={runState.mapNodes}
           currentNodeId={runState.currentNodeId}
+          player={runState.player}
           onNodeSelect={setCurrentNode}
           onProceed={() => {
             if (runState.currentNodeId) {
@@ -387,16 +416,16 @@ export default function Game() {
           player={runState.player}
           previousStats={previousStats}
           options={levelUpOptions}
-          onSelect={handleLevelUpSelect}
-          onSkip={handleLevelUpSkip}
+          onSelect={handleLevelUpComplete}
+          onSkip={() => handleLevelUpComplete()}
         />
       )}
-      {showVictory && <VictoryModal xpEarned={150} />}
+      {showVictory && <VictoryModal xpEarned={VICTORY_XP} />}
       {showEvolution && evolvedPokemon && runState.player && (
         <EvolutionModal
           oldPokemon={runState.player.pokemon}
           newPokemon={evolvedPokemon}
-          onConfirm={handleEvolutionConfirm}
+          onConfirm={handleEvolutionComplete}
         />
       )}
     </>

@@ -1,5 +1,6 @@
 import type { Card, Pokemon } from "../types";
 import { getMove } from "../services/pokeCache";
+import { STARTING_DECK_SIZE } from "../config/gameConfig";
 
 interface ApiMove {
   id: number;
@@ -55,7 +56,7 @@ export async function buildInitialDeck(pokemon: Pokemon): Promise<Card[]> {
     return deck;
   }
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < STARTING_DECK_SIZE; i++) {
     const randomIndex = Math.floor(Math.random() * damageMoves.length);
     deck.push({ ...damageMoves[randomIndex] });
   }

@@ -135,7 +135,7 @@ export default function BattleScreen({
                   <img
                     src={enemy.pokemon.sprites.animated.front}
                     alt={enemy.pokemon.name}
-                    className="w-24 h-24"
+                    className="w-24 h-24 pixelated"
                   />
                   <p className="capitalize">{enemy.pokemon.name}</p>
                 </button>

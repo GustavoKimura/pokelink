@@ -143,7 +143,7 @@ export default function LevelUpModal({
             <img
               src={player.pokemon.sprites.animated.front}
               alt={player.pokemon.name}
-              className="w-32 h-32"
+              className="w-32 h-32 pixelated"
             />
           </div>
         </div>
