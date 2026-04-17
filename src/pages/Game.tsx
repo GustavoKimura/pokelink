@@ -23,6 +23,7 @@ export default function Game() {
       return;
     }
 
+    console.log("Game init started");
     const playerApiData = await getPokemon(starterId);
     const playerPokemon = transformApiPokemon(playerApiData);
     const initialDeck = await buildInitialDeck(playerPokemon);
@@ -63,6 +64,7 @@ export default function Game() {
       energy: 3,
     };
 
+    console.log("Dispatching INIT_BATTLE");
     dispatch({ type: "INIT_BATTLE", player, enemy });
     setLoading(false);
   }, [starterId, navigate, dispatch]);
@@ -74,6 +76,7 @@ export default function Game() {
   }, [initGame]);
 
   const handleSelectMove = (move: Card) => {
+    console.log("handleSelectMove", move.name);
     if (state.phase !== "battle") return;
     dispatch({ type: "SELECT_MOVE", move });
   };
@@ -87,10 +90,12 @@ export default function Game() {
   };
 
   const handleEndTurn = () => {
+    console.log("handleEndTurn");
     dispatch({ type: "END_TURN" });
   };
 
   const handleEnemyTurn = () => {
+    console.log("handleEnemyTurn triggered");
     dispatch({ type: "ENEMY_TURN" });
   };
 

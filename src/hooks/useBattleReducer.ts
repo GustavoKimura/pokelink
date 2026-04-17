@@ -18,13 +18,19 @@ type BattleAction =
   | { type: "ENEMY_TURN" }
   | { type: "ADD_LOG"; message: string };
 
+const isPlayerUnit = (
+  unit: PlayerPokemon | EnemyPokemon,
+): unit is PlayerPokemon => {
+  return "runXp" in unit;
+};
+
 function battleReducer(state: BattleState, action: BattleAction): BattleState {
   switch (action.type) {
     case "INIT_BATTLE": {
       const turnOrder = [action.player, action.enemy].sort(
         (a, b) => b.pokemon.stats.speed - a.pokemon.stats.speed,
       );
-      const firstIsPlayer = turnOrder[0] === action.player;
+      const firstIsPlayer = isPlayerUnit(turnOrder[0]);
       return {
         ...state,
         phase: firstIsPlayer ? "battle" : "enemy_turn",
@@ -84,28 +90,70 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
       const newHp = Math.max(0, defender.currentHp - damage);
       const updatedDefender = { ...defender, currentHp: newHp };
 
-      const updatedEnemies = state.enemies.map((e) =>
-        e.pokemon.id === defender.pokemon.id ? updatedDefender : e,
-      );
+      let updatedPlayer = state.player;
+      let updatedEnemies = state.enemies;
+
+      const isPlayerDefender = isPlayerUnit(defender);
+      if (isPlayerDefender) {
+        updatedPlayer = updatedDefender as PlayerPokemon;
+      } else {
+        updatedEnemies = state.enemies.map((e) =>
+          e.pokemon.id === defender.pokemon.id ? updatedDefender : e,
+        );
+      }
 
       const newLog = [
         ...state.log,
         `${attacker.pokemon.name} usou ${move.name} e causou ${damage} de dano!`,
       ];
 
+      const moveIndex = attacker.hand.findIndex((c) => c.id === move.id);
+      const newHand = attacker.hand.filter((_, idx) => idx !== moveIndex);
+      const newDiscard = [...attacker.discardPile, move];
       const updatedAttacker = {
         ...attacker,
+        hand: newHand,
+        discardPile: newDiscard,
         energy: attacker.energy - move.energyCost,
       };
-      const updatedPlayer =
-        state.player?.pokemon.id === attacker.pokemon.id
-          ? updatedAttacker
-          : state.player;
+
+      const isPlayerAttacker = isPlayerUnit(attacker);
+      if (isPlayerAttacker) {
+        updatedPlayer = updatedAttacker as PlayerPokemon;
+      } else {
+        updatedEnemies = updatedEnemies.map((e) =>
+          e.pokemon.id === attacker.pokemon.id ? updatedAttacker : e,
+        );
+      }
+
+      const updatedTurnOrder = state.turnOrder.map((unit) => {
+        if (isPlayerUnit(unit) && isPlayerAttacker) return updatedAttacker;
+        if (
+          !isPlayerUnit(unit) &&
+          !isPlayerAttacker &&
+          unit.pokemon.id === attacker.pokemon.id
+        )
+          return updatedAttacker;
+        if (
+          !isPlayerUnit(unit) &&
+          unit.pokemon.id === defender.pokemon.id &&
+          !isPlayerDefender
+        )
+          return updatedDefender;
+        if (
+          isPlayerUnit(unit) &&
+          isPlayerDefender &&
+          unit.pokemon.id === defender.pokemon.id
+        )
+          return updatedDefender;
+        return unit;
+      });
 
       return {
         ...state,
-        player: updatedPlayer as PlayerPokemon | null,
+        player: updatedPlayer,
         enemies: updatedEnemies,
+        turnOrder: updatedTurnOrder,
         log: newLog,
         selectedMove: null,
         selectingTarget: false,
@@ -113,29 +161,69 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
     }
 
     case "END_TURN": {
-      if (!state.player) return state;
+      const currentUnit = state.turnOrder[state.currentTurnIndex];
+      const currentIsPlayer = isPlayerUnit(currentUnit);
 
-      const newDiscard = [...state.player.discardPile, ...state.player.hand];
-      const {
-        drawn: newHand,
-        newDeck,
-        newDiscard: finalDiscard,
-      } = drawCards(state.player.deck, newDiscard, 3);
-      const updatedPlayer = {
-        ...state.player,
-        deck: newDeck,
-        hand: newHand,
-        discardPile: finalDiscard,
-        energy: 3,
-      };
+      let updatedTurnOrder = [...state.turnOrder];
+      let updatedPlayer = state.player;
+      let updatedEnemies = [...state.enemies];
 
-      const nextIndex = (state.currentTurnIndex + 1) % state.turnOrder.length;
-      const nextUnit = state.turnOrder[nextIndex];
-      const nextPhase = nextUnit === updatedPlayer ? "battle" : "enemy_turn";
+      if (currentIsPlayer && state.player) {
+        const newDiscard = [...state.player.discardPile, ...state.player.hand];
+        const {
+          drawn: newHand,
+          newDeck,
+          newDiscard: finalDiscard,
+        } = drawCards(state.player.deck, newDiscard, 3);
+        const refreshedPlayer = {
+          ...state.player,
+          deck: newDeck,
+          hand: newHand,
+          discardPile: finalDiscard,
+          energy: 3,
+        };
+        updatedPlayer = refreshedPlayer;
+        updatedTurnOrder = updatedTurnOrder.map((unit) =>
+          isPlayerUnit(unit) && unit.pokemon.id === state.player!.pokemon.id
+            ? refreshedPlayer
+            : unit,
+        );
+      } else {
+        const enemy = currentUnit as EnemyPokemon;
+        if (enemy) {
+          const newDiscard = [...enemy.discardPile, ...enemy.hand];
+          const {
+            drawn: newHand,
+            newDeck,
+            newDiscard: finalDiscard,
+          } = drawCards(enemy.deck, newDiscard, 3);
+          const refreshedEnemy = {
+            ...enemy,
+            deck: newDeck,
+            hand: newHand,
+            discardPile: finalDiscard,
+            energy: 3,
+          };
+          updatedEnemies = updatedEnemies.map((e) =>
+            e.pokemon.id === enemy.pokemon.id ? refreshedEnemy : e,
+          );
+          updatedTurnOrder = updatedTurnOrder.map((unit) =>
+            !isPlayerUnit(unit) && unit.pokemon.id === enemy.pokemon.id
+              ? refreshedEnemy
+              : unit,
+          );
+        }
+      }
+
+      const nextIndex = (state.currentTurnIndex + 1) % updatedTurnOrder.length;
+      const nextUnit = updatedTurnOrder[nextIndex];
+      const nextPhase = isPlayerUnit(nextUnit) ? "battle" : "enemy_turn";
 
       return {
         ...state,
         player: updatedPlayer,
+        enemies: updatedEnemies,
+        turnOrder: updatedTurnOrder,
         currentTurnIndex: nextIndex,
         phase: nextPhase,
       };
@@ -145,7 +233,7 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
       const currentEnemy = state.turnOrder[
         state.currentTurnIndex
       ] as EnemyPokemon;
-      if (!currentEnemy || currentEnemy === state.player) return state;
+      if (!currentEnemy || isPlayerUnit(currentEnemy)) return state;
 
       const availableMoves = currentEnemy.hand.filter(
         (m) => m.energyCost <= currentEnemy.energy,
@@ -158,14 +246,12 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
         availableMoves[Math.floor(Math.random() * availableMoves.length)];
       const target = state.player!;
 
-      const afterAttackState = battleReducer(state, {
+      return battleReducer(state, {
         type: "EXECUTE_ATTACK",
         attacker: currentEnemy,
         defender: target,
         move: randomMove,
       });
-
-      return battleReducer(afterAttackState, { type: "END_TURN" });
     }
 
     case "ADD_LOG":

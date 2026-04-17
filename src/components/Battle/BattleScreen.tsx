@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import type { BattleState, Card } from "../../types";
+import { useEffect, useRef, useCallback } from "react";
+import type { BattleState, Card, EnemyPokemon } from "../../types";
 import PokemonStatus from "./PokemonStatus";
 import CardHand from "./CardHand";
 import BattleLog from "./BattleLog";
@@ -21,16 +21,49 @@ export default function BattleScreen({
   onEndTurn,
   onEnemyTurn,
 }: BattleScreenProps) {
-  const { player, enemies, phase, selectingTarget, log } = state;
+  const { player, enemies, phase, selectingTarget, log, currentTurnIndex } =
+    state;
+  const enemyTurnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const processEnemyTurn = useCallback(() => {
+    const currentEnemy = state.turnOrder[currentTurnIndex] as
+      | EnemyPokemon
+      | undefined;
+    if (!currentEnemy || currentEnemy === player) {
+      onEndTurn();
+      return;
+    }
+
+    const canAttack = currentEnemy.hand.some(
+      (m) => m.energyCost <= currentEnemy.energy,
+    );
+    if (!canAttack) {
+      onEndTurn();
+      return;
+    }
+
+    onEnemyTurn();
+  }, [state, currentTurnIndex, player, onEnemyTurn, onEndTurn]);
 
   useEffect(() => {
     if (phase === "enemy_turn") {
-      const timer = setTimeout(() => {
-        onEnemyTurn();
-      }, 1000);
-      return () => clearTimeout(timer);
+      if (enemyTurnTimerRef.current) {
+        clearTimeout(enemyTurnTimerRef.current);
+      }
+
+      enemyTurnTimerRef.current = setTimeout(() => {
+        processEnemyTurn();
+        enemyTurnTimerRef.current = null;
+      }, 800);
     }
-  }, [phase, onEnemyTurn]);
+
+    return () => {
+      if (enemyTurnTimerRef.current) {
+        clearTimeout(enemyTurnTimerRef.current);
+        enemyTurnTimerRef.current = null;
+      }
+    };
+  }, [phase, currentTurnIndex, processEnemyTurn]);
 
   if (!player || enemies.length === 0) return null;
 

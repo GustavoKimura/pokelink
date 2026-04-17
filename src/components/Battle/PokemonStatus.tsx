@@ -66,9 +66,7 @@ export default function PokemonStatus({
             ))}
           </div>
 
-          {!isPlayer && "energy" in pokemon && (
-            <p className="text-sm mt-2">⚡ Energia: {pokemon.energy}/3</p>
-          )}
+          <p className="text-sm mt-2">⚡ Energia: {pokemon.energy}/3</p>
         </div>
       </div>
     </div>
