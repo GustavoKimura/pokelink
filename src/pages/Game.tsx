@@ -31,7 +31,6 @@ export default function Game() {
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [levelUpOptions, setLevelUpOptions] = useState<Card[]>([]);
   const [showVictory, setShowVictory] = useState(false);
-  const [showGameOver, setShowGameOver] = useState(false);
   const [showRest, setShowRest] = useState(false);
   const [healAmount, setHealAmount] = useState(0);
   const initialized = useRef(false);
@@ -117,8 +116,20 @@ export default function Game() {
       3,
     );
 
+    const playerDeck = runState.player.deck;
+    const shuffledPlayerDeck = [...playerDeck].sort(() => Math.random() - 0.5);
+    const { drawn: newHand, newDeck: playerNewDeck } = drawCards(
+      shuffledPlayerDeck,
+      [],
+      3,
+    );
+
     const playerWithShield = {
       ...runState.player,
+      deck: playerNewDeck,
+      hand: newHand,
+      discardPile: [],
+      energy: 3,
       shield: calculateShield(
         runState.player.pokemon.stats.defense,
         runState.player.pokemon.stats.specialDefense,
@@ -149,8 +160,11 @@ export default function Game() {
   };
 
   const handleBattleEnd = async (victory: boolean) => {
+    const finalPlayer = state.player;
+    if (!finalPlayer) return;
+
     if (!victory) {
-      setShowGameOver(true);
+      updatePlayer(finalPlayer);
       setRunPhase("defeat");
       return;
     }
@@ -158,13 +172,10 @@ export default function Game() {
     const currentNode = runState.mapNodes.find(
       (n) => n.id === runState.currentNodeId,
     );
-    if (!currentNode || !runState.player) return;
+    if (!currentNode) return;
 
-    const xpGain = calculateXpGain(currentNode.level, runState.player.level);
-    const updatedPlayer = {
-      ...runState.player,
-      runXp: runState.player.runXp + xpGain,
-    };
+    const xpGain = calculateXpGain(currentNode.level, finalPlayer.level);
+    const updatedPlayer = { ...finalPlayer, runXp: finalPlayer.runXp + xpGain };
 
     const levelUpResult = checkLevelUp(
       updatedPlayer.runXp,
@@ -173,11 +184,13 @@ export default function Game() {
     if (levelUpResult) {
       updatedPlayer.level = levelUpResult.newLevel;
       updatedPlayer.runXp = levelUpResult.remainingXp;
-      updatedPlayer.maxHp = calculateMaxHp(
+      const newMaxHp = calculateMaxHp(
         updatedPlayer.pokemon.stats.hp,
         updatedPlayer.level,
       );
-      updatedPlayer.currentHp = updatedPlayer.maxHp;
+      const hpRatio = updatedPlayer.currentHp / updatedPlayer.maxHp;
+      updatedPlayer.maxHp = newMaxHp;
+      updatedPlayer.currentHp = Math.max(1, Math.floor(newMaxHp * hpRatio));
       updatedPlayer.xpToNextLevel = getXpForNextLevel(updatedPlayer.level);
 
       const options = await getLevelUpMoveOptions(
@@ -281,7 +294,6 @@ export default function Game() {
         />
       )}
       {showVictory && <VictoryModal xpEarned={150} />}
-      {showGameOver && <GameOverModal />}
     </>
   );
 }

@@ -38,17 +38,6 @@ export async function buildInitialDeck(pokemon: Pokemon): Promise<Card[]> {
 
   const deck: Card[] = [];
   if (damageMoves.length === 0) {
-    const tackle: Card = {
-      id: "33",
-      name: "tackle",
-      type: "normal",
-      power: 40,
-      pp: 35,
-      energyCost: 1,
-      description: "",
-      damageClass: "physical",
-    };
-    for (let i = 0; i < 5; i++) deck.push({ ...tackle });
     return deck;
   }
 
