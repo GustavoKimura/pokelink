@@ -79,3 +79,17 @@ export function drawCards(
 
   return { drawn, newDeck: currentDeck, newDiscard: currentDiscard };
 }
+
+export function createStruggleCard(): Card {
+  return {
+    id: "165",
+    name: "Struggle",
+    type: "normal",
+    power: 50,
+    pp: 1,
+    energyCost: 1,
+    description: "",
+    damageClass: "physical",
+    temporary: true,
+  };
+}

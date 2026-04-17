@@ -1,6 +1,6 @@
 import { useReducer } from "react";
 import type { BattleState, PlayerPokemon, EnemyPokemon, Card } from "../types";
-import { drawCards } from "../utils/cardUtils";
+import { drawCards, createStruggleCard } from "../utils/cardUtils";
 import {
   calculateDamage,
   calculateShield,
@@ -29,7 +29,10 @@ const isPlayerUnit = (
 };
 
 function drawCardsForUnit<T extends PlayerPokemon | EnemyPokemon>(unit: T): T {
-  const newDiscard = [...unit.discardPile, ...unit.hand];
+  const newDiscard = [
+    ...unit.discardPile,
+    ...unit.hand.filter((c) => !c.temporary),
+  ];
   const {
     drawn: newHand,
     newDeck: newDrawPile,
@@ -166,26 +169,48 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
       }
 
       let effectivenessMessage = "";
+      const newLog = [...state.log];
+
       if (effectiveness > 1) effectivenessMessage = " Foi super efetivo!";
       if (effectiveness < 1 && effectiveness > 0)
         effectivenessMessage = " Não foi muito efetivo...";
-      if (effectiveness === 0) effectivenessMessage = " Não afetou o alvo!";
+      if (effectiveness === 0) {
+        effectivenessMessage = " Não afetou o alvo!";
+        const despairMessage = `${attacker.pokemon.name} entrou em desespero, pois não afetou ${defender.pokemon.name}!`;
+        newLog.push(despairMessage);
+      }
 
       const shieldMessage =
         shieldAbsorbed > 0 ? ` (Escudo absorveu ${shieldAbsorbed})` : "";
-      const newLog = [
-        ...state.log,
+      newLog.push(
         `${attacker.pokemon.name} usou ${move.name} e causou ${damage} de dano${shieldMessage}!${effectivenessMessage}`,
-      ];
+      );
 
-      const moveIndex = attacker.hand.findIndex((c) => c.id === move.id);
-      const newHand = attacker.hand.filter((_, idx) => idx !== moveIndex);
-      const newDiscard = [...attacker.discardPile, move];
-      const updatedAttacker = {
-        ...attacker,
+      let updatedAttacker = { ...attacker };
+
+      if (effectiveness === 0 && !move.temporary) {
+        const struggleCard = createStruggleCard();
+        updatedAttacker = {
+          ...updatedAttacker,
+          hand: [...updatedAttacker.hand, struggleCard],
+        };
+        newLog.push(
+          `Uma carta ${struggleCard.name} foi adicionada à mão de ${attacker.pokemon.name}!`,
+        );
+      }
+
+      const moveIndex = updatedAttacker.hand.findIndex((c) => c.id === move.id);
+      const newHand = updatedAttacker.hand.filter(
+        (_, idx) => idx !== moveIndex,
+      );
+      const newDiscard = move.temporary
+        ? updatedAttacker.discardPile
+        : [...updatedAttacker.discardPile, move];
+      updatedAttacker = {
+        ...updatedAttacker,
         hand: newHand,
         discardPile: newDiscard,
-        energy: attacker.energy - move.energyCost,
+        energy: updatedAttacker.energy - move.energyCost,
       };
 
       const isPlayerAttacker = isPlayerUnit(attacker);

@@ -46,6 +46,7 @@ export interface Card {
   energyCost: 1 | 2 | 3;
   description: string;
   damageClass: "physical" | "special" | "status";
+  temporary?: boolean;
 }
 
 export interface PlayerPokemon {
