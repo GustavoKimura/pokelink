@@ -33,7 +33,7 @@ export function generateMap(): MapNode[] {
         }
       }
 
-      const level = 2 + row * 3 + Math.floor(Math.random() * 3);
+      const level = 1 + row * 2 + Math.floor(Math.random() * 2);
 
       const y = (rows - 1 - row) * 150 + 100;
 
