@@ -64,6 +64,7 @@ export default function Game() {
     null,
   );
   const [levelUpQueue, setLevelUpQueue] = useState<LevelUpStep[]>([]);
+  const [isProcessingQueue, setIsProcessingQueue] = useState(false);
   const initialized = useRef(false);
 
   const {
@@ -204,6 +205,7 @@ export default function Game() {
 
   const processNextLevelUp = useCallback(() => {
     if (levelUpQueue.length === 0) {
+      setIsProcessingQueue(false);
       completeNode(runState.currentNodeId!);
       setRunPhase("map");
       return;
@@ -220,6 +222,27 @@ export default function Game() {
     }
   }, [levelUpQueue, completeNode, setRunPhase, runState.currentNodeId]);
 
+  useEffect(() => {
+    if (
+      levelUpQueue.length > 0 &&
+      !isProcessingQueue &&
+      !showLevelUp &&
+      !showEvolution
+    ) {
+      const timer = setTimeout(() => {
+        setIsProcessingQueue(true);
+        processNextLevelUp();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [
+    levelUpQueue,
+    isProcessingQueue,
+    showLevelUp,
+    showEvolution,
+    processNextLevelUp,
+  ]);
+
   const handleLevelUpComplete = (selectedCard?: Card) => {
     if (!runState.player) return;
     const updatedPlayer = { ...runState.player };
@@ -228,12 +251,12 @@ export default function Game() {
     }
     updatePlayer(updatedPlayer);
     setShowLevelUp(false);
-    processNextLevelUp();
+    setIsProcessingQueue(false);
   };
 
   const handleEvolutionComplete = () => {
     setShowEvolution(false);
-    processNextLevelUp();
+    setIsProcessingQueue(false);
   };
 
   const handleBattleEnd = async (victory: boolean) => {
@@ -347,7 +370,6 @@ export default function Game() {
 
     if (steps.length > 0) {
       setLevelUpQueue(steps);
-      processNextLevelUp();
       setRunPhase("map");
     } else {
       completeNode(runState.currentNodeId!);
