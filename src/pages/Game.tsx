@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import type { PlayerPokemon, EnemyPokemon, Card } from "../types";
 import { getPokemon } from "../services/pokeCache";
 import { transformApiPokemon } from "../utils/pokemonTransform";
-import { buildInitialDeck, drawCards } from "../utils/cardUtils";
+import { buildInitialDeck, drawCards, shuffleArray } from "../utils/cardUtils";
 import {
   calculateMaxHp,
   calculateShield,
@@ -53,9 +53,13 @@ export default function Game() {
 
     const playerApiData = await getPokemon(starterId);
     const playerPokemon = transformApiPokemon(playerApiData);
-    const initialDeck = await buildInitialDeck(playerPokemon);
-    const shuffledDeck = [...initialDeck].sort(() => Math.random() - 0.5);
-    const { drawn: initialHand, newDeck } = drawCards(shuffledDeck, [], 3);
+    const runDeck = await buildInitialDeck(playerPokemon);
+    const shuffledDrawPile = shuffleArray([...runDeck]);
+    const { drawn: initialHand, newDeck: initialDrawPile } = drawCards(
+      shuffledDrawPile,
+      [],
+      3,
+    );
 
     const player: PlayerPokemon = {
       pokemon: playerPokemon,
@@ -67,7 +71,8 @@ export default function Game() {
         playerPokemon.stats.specialDefense,
         1,
       ),
-      deck: newDeck,
+      runDeck: runDeck,
+      drawPile: initialDrawPile,
       hand: initialHand,
       discardPile: [],
       energy: 3,
@@ -108,25 +113,25 @@ export default function Game() {
     setLoading(true);
     const enemyApiData = await getPokemon(node.pokemonId!);
     const enemyPokemon = transformApiPokemon(enemyApiData);
-    const enemyDeck = await buildInitialDeck(enemyPokemon);
-    const shuffledEnemyDeck = [...enemyDeck].sort(() => Math.random() - 0.5);
-    const { drawn: enemyHand, newDeck: enemyNewDeck } = drawCards(
-      shuffledEnemyDeck,
+    const enemyRunDeck = await buildInitialDeck(enemyPokemon);
+    const shuffledEnemyDraw = shuffleArray([...enemyRunDeck]);
+    const { drawn: enemyHand, newDeck: enemyDrawPile } = drawCards(
+      shuffledEnemyDraw,
       [],
       3,
     );
 
-    const playerDeck = runState.player.deck;
-    const shuffledPlayerDeck = [...playerDeck].sort(() => Math.random() - 0.5);
-    const { drawn: newHand, newDeck: playerNewDeck } = drawCards(
-      shuffledPlayerDeck,
+    const playerRunDeck = runState.player.runDeck;
+    const shuffledPlayerDraw = shuffleArray([...playerRunDeck]);
+    const { drawn: newHand, newDeck: newDrawPile } = drawCards(
+      shuffledPlayerDraw,
       [],
       3,
     );
 
     const playerWithShield = {
       ...runState.player,
-      deck: playerNewDeck,
+      drawPile: newDrawPile,
       hand: newHand,
       discardPile: [],
       energy: 3,
@@ -147,7 +152,8 @@ export default function Game() {
         enemyPokemon.stats.specialDefense,
         node.level,
       ),
-      deck: enemyNewDeck,
+      runDeck: enemyRunDeck,
+      drawPile: enemyDrawPile,
       hand: enemyHand,
       discardPile: [],
       energy: 3,
@@ -224,7 +230,7 @@ export default function Game() {
 
     const updatedPlayer = {
       ...runState.player,
-      deck: [...runState.player.deck, card],
+      runDeck: [...runState.player.runDeck, card],
     };
 
     updatePlayer(updatedPlayer);

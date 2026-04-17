@@ -177,8 +177,8 @@ export default function BattleScreen({
       {showPlayerDeck && (
         <DeckViewerModal
           title="Seu Baralho"
-          runDeck={player.deck}
-          currentDeckCount={player.deck.length}
+          runDeck={player.runDeck}
+          currentDeckCount={player.drawPile.length}
           currentDiscardPile={player.discardPile}
           handCount={player.hand.length}
           onClose={() => setShowPlayerDeck(false)}
@@ -188,8 +188,8 @@ export default function BattleScreen({
       {showEnemyDeck && (
         <DeckViewerModal
           title={`Baralho de ${currentEnemy.pokemon.name}`}
-          runDeck={currentEnemy.deck}
-          currentDeckCount={currentEnemy.deck.length}
+          runDeck={currentEnemy.runDeck}
+          currentDeckCount={currentEnemy.drawPile.length}
           currentDiscardPile={currentEnemy.discardPile}
           handCount={currentEnemy.hand.length}
           onClose={() => setShowEnemyDeck(false)}

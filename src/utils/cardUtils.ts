@@ -25,7 +25,7 @@ export async function buildInitialDeck(pokemon: Pokemon): Promise<Card[]> {
     if (moveData.power !== null && moveData.damage_class.name !== "status") {
       damageMoves.push({
         id: String(moveData.id),
-        name: moveData.name,
+        name: moveData.name.charAt(0).toUpperCase() + moveData.name.slice(1),
         type: moveData.type.name,
         power: moveData.power,
         pp: moveData.pp,
@@ -45,6 +45,7 @@ export async function buildInitialDeck(pokemon: Pokemon): Promise<Card[]> {
     const randomIndex = Math.floor(Math.random() * damageMoves.length);
     deck.push({ ...damageMoves[randomIndex] });
   }
+
   return deck;
 }
 

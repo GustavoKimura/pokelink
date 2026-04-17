@@ -184,7 +184,7 @@ export default function MapScreen({
       {showDeckViewer && player && (
         <DeckViewerModal
           title="Baralho da Run"
-          runDeck={player.deck}
+          runDeck={player.runDeck}
           onClose={() => setShowDeckViewer(false)}
         />
       )}

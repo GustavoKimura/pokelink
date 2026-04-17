@@ -205,12 +205,12 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
         const newDiscard = [...state.player.discardPile, ...state.player.hand];
         const {
           drawn: newHand,
-          newDeck,
+          newDeck: newDrawPile,
           newDiscard: finalDiscard,
-        } = drawCards(state.player.deck, newDiscard, 3);
+        } = drawCards(state.player.drawPile, newDiscard, 3);
         const refreshedPlayer = {
           ...state.player,
-          deck: newDeck,
+          drawPile: newDrawPile,
           hand: newHand,
           discardPile: finalDiscard,
           energy: 3,
@@ -227,12 +227,12 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
           const newDiscard = [...enemy.discardPile, ...enemy.hand];
           const {
             drawn: newHand,
-            newDeck,
+            newDeck: newDrawPile,
             newDiscard: finalDiscard,
-          } = drawCards(enemy.deck, newDiscard, 3);
+          } = drawCards(enemy.drawPile, newDiscard, 3);
           const refreshedEnemy = {
             ...enemy,
-            deck: newDeck,
+            drawPile: newDrawPile,
             hand: newHand,
             discardPile: finalDiscard,
             energy: 3,

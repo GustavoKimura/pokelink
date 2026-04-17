@@ -23,7 +23,7 @@ export async function getLevelUpMoveOptions(
     if (moveData.power !== null && moveData.damage_class.name !== "status") {
       damageMoves.push({
         id: String(moveData.id),
-        name: moveData.name,
+        name: moveData.name.charAt(0).toUpperCase() + moveData.name.slice(1),
         type: moveData.type.name,
         power: moveData.power,
         pp: moveData.pp,
