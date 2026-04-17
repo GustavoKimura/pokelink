@@ -1,8 +1,10 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import type { BattleState, Card, EnemyPokemon } from "../../types";
 import PokemonStatus from "./PokemonStatus";
 import CardHand from "./CardHand";
 import BattleLog from "./BattleLog";
+import DeckViewerModal from "../Common/DeckViewerModal";
+import { BookOpen } from "lucide-react";
 
 interface BattleScreenProps {
   state: BattleState;
@@ -26,6 +28,7 @@ export default function BattleScreen({
   const { player, enemies, phase, selectingTarget, log, currentTurnIndex } =
     state;
   const enemyTurnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showDeckViewer, setShowDeckViewer] = useState(false);
 
   useEffect(() => {
     if (!player || enemies.length === 0) return;
@@ -90,7 +93,7 @@ export default function BattleScreen({
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center px-4">
-        <div className="w-full max-w-md flex justify-center mb-8">
+        <div className="w-full max-w-md flex justify-center mb-8 relative">
           <PokemonStatus pokemon={currentEnemy} isPlayer={false} />
         </div>
 
@@ -98,9 +101,19 @@ export default function BattleScreen({
           <BattleLog messages={log} />
         </div>
 
-        <div className="w-full max-w-md flex justify-center">
+        <div className="w-full max-w-md flex justify-center relative">
           <PokemonStatus pokemon={player} isPlayer />
         </div>
+      </div>
+
+      <div className="absolute top-4 right-4 z-10">
+        <button
+          onClick={() => setShowDeckViewer(true)}
+          className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700"
+          title="Ver Baralho"
+        >
+          <BookOpen className="w-6 h-6" />
+        </button>
       </div>
 
       {selectingTarget && (
@@ -155,6 +168,15 @@ export default function BattleScreen({
           )}
         </div>
       </div>
+
+      {showDeckViewer && (
+        <DeckViewerModal
+          deck={player.deck}
+          hand={player.hand}
+          discardPile={player.discardPile}
+          onClose={() => setShowDeckViewer(false)}
+        />
+      )}
     </div>
   );
 }

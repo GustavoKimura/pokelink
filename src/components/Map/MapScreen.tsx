@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -12,6 +12,8 @@ import "reactflow/dist/style.css";
 import type { MapNode } from "../../types/map";
 import { useGameStore } from "../../store/gameStore";
 import { useAccountStore } from "../../store/accountStore";
+import DeckViewerModal from "../Common/DeckViewerModal";
+import { BookOpen } from "lucide-react";
 
 interface MapScreenProps {
   nodes: MapNode[];
@@ -36,7 +38,8 @@ export default function MapScreen({
 }: MapScreenProps) {
   const navigate = useNavigate();
   const { resetAccount } = useAccountStore();
-  const { resetRun } = useGameStore();
+  const { runState, resetRun } = useGameStore();
+  const [showDeckViewer, setShowDeckViewer] = useState(false);
 
   const { flowNodes, flowEdges } = useMemo(() => {
     const nodeTypeStyles = {
@@ -102,11 +105,20 @@ export default function MapScreen({
     navigate("/");
   };
 
+  const player = runState.player;
+
   return (
     <div className="h-screen bg-gray-900 text-white flex flex-col">
       <div className="p-4 bg-gray-800 flex justify-between items-center">
         <h1 className="text-2xl font-bold text-yellow-400">PokéLink - Mapa</h1>
         <div className="flex gap-2">
+          <button
+            onClick={() => setShowDeckViewer(true)}
+            className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600"
+            title="Ver Baralho"
+          >
+            <BookOpen className="w-5 h-5" />
+          </button>
           <button
             onClick={handleQuitRun}
             className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg"
@@ -166,6 +178,15 @@ export default function MapScreen({
           Prosseguir
         </button>
       </div>
+
+      {showDeckViewer && player && (
+        <DeckViewerModal
+          deck={player.deck}
+          hand={player.hand}
+          discardPile={player.discardPile}
+          onClose={() => setShowDeckViewer(false)}
+        />
+      )}
     </div>
   );
 }
