@@ -9,6 +9,7 @@ import {
   calculateShield,
   calculateXpGain,
   checkLevelUp,
+  getXpForNextLevel,
 } from "../utils/battleUtils";
 import { getLevelUpMoveOptions } from "../utils/levelUpUtils";
 import { useBattleReducer } from "../hooks/useBattleReducer";
@@ -73,7 +74,7 @@ export default function Game() {
       energy: 3,
       revives: 1,
       runXp: 0,
-      xpToNextLevel: Math.floor((4 * 1 ** 3) / 5),
+      xpToNextLevel: getXpForNextLevel(1),
     };
 
     setPlayer(player);
@@ -167,17 +168,16 @@ export default function Game() {
         updatedPlayer.level,
       );
       updatedPlayer.currentHp = updatedPlayer.maxHp;
-      updatedPlayer.xpToNextLevel = Math.floor(
-        (4 * updatedPlayer.level ** 3) / 5,
-      );
+      updatedPlayer.xpToNextLevel = getXpForNextLevel(updatedPlayer.level);
 
       const options = await getLevelUpMoveOptions(
         updatedPlayer.pokemon,
         updatedPlayer.level,
       );
+      updatePlayer(updatedPlayer);
+
       if (options.length > 0) {
         setLevelUpOptions(options);
-        updatePlayer(updatedPlayer);
         setShowLevelUp(true);
         setRunPhase("map");
         return;
@@ -227,9 +227,9 @@ export default function Game() {
     );
   }
 
-  if (runState.runPhase === "map") {
-    return (
-      <>
+  return (
+    <>
+      {runState.runPhase === "map" && (
         <MapScreen
           nodes={runState.mapNodes}
           currentNodeId={runState.currentNodeId}
@@ -240,29 +240,28 @@ export default function Game() {
             }
           }}
         />
-        {showRest && (
-          <RestModal onContinue={handleRestContinue} healAmount={healAmount} />
-        )}
-      </>
-    );
-  }
+      )}
 
-  return (
-    <>
-      <BattleScreen
-        state={state}
-        onSelectMove={(move) => dispatch({ type: "SELECT_MOVE", move })}
-        onSelectTarget={(targetId) =>
-          dispatch({ type: "SELECT_TARGET", targetId })
-        }
-        onCancelTarget={() => dispatch({ type: "CANCEL_TARGET" })}
-        onEndTurn={() => dispatch({ type: "END_TURN" })}
-        onEnemyTurn={() => dispatch({ type: "ENEMY_TURN" })}
-        onBattleEnd={handleBattleEnd}
-      />
-      {showLevelUp && (
+      {(runState.runPhase === "battle" || runState.runPhase === "boss") && (
+        <BattleScreen
+          state={state}
+          onSelectMove={(move) => dispatch({ type: "SELECT_MOVE", move })}
+          onSelectTarget={(targetId) =>
+            dispatch({ type: "SELECT_TARGET", targetId })
+          }
+          onCancelTarget={() => dispatch({ type: "CANCEL_TARGET" })}
+          onEndTurn={() => dispatch({ type: "END_TURN" })}
+          onEnemyTurn={() => dispatch({ type: "ENEMY_TURN" })}
+          onBattleEnd={handleBattleEnd}
+        />
+      )}
+
+      {showRest && (
+        <RestModal onContinue={handleRestContinue} healAmount={healAmount} />
+      )}
+      {showLevelUp && runState.player && (
         <LevelUpModal
-          player={runState.player!}
+          player={runState.player}
           options={levelUpOptions}
           onSelect={handleLevelUpSelect}
         />

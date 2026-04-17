@@ -47,6 +47,10 @@ export function calculateXpGain(
   return Math.floor(base * multiplier);
 }
 
+export function getXpForNextLevel(level: number): number {
+  return Math.floor((4 * Math.pow(level, 3)) / 5);
+}
+
 export function checkLevelUp(
   currentXp: number,
   currentLevel: number,
@@ -58,8 +62,4 @@ export function checkLevelUp(
     return { newLevel, remainingXp };
   }
   return null;
-}
-
-function getXpForNextLevel(level: number): number {
-  return Math.floor((4 * level ** 3) / 5);
 }
