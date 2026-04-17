@@ -16,6 +16,7 @@ import {
   calculateXpGain,
   checkLevelUp,
   getXpForNextLevel,
+  calculateCardDisplayDamage,
 } from "../utils/battleUtils";
 import { getLevelUpMoveOptions } from "../utils/levelUpUtils";
 import { checkEvolution } from "../utils/evolutionUtils";
@@ -201,13 +202,25 @@ export default function Game() {
       updatedPlayer.level,
     );
     if (levelUpResult) {
-      const oldStats = {
+      const sampleMove: Card = {
+        id: "sample",
+        name: "Sample",
+        type: "normal",
+        power: 40,
+        pp: 35,
+        energyCost: 1,
+        description: "",
+        damageClass: "physical",
+      };
+      const oldAttackPower = calculateCardDisplayDamage(
+        updatedPlayer,
+        sampleMove,
+      );
+
+      const oldStats: PreviousStats = {
         level: updatedPlayer.level,
         maxHp: updatedPlayer.maxHp,
-        attack: updatedPlayer.pokemon.stats.attack,
-        specialAttack: updatedPlayer.pokemon.stats.specialAttack,
-        defense: updatedPlayer.pokemon.stats.defense,
-        specialDefense: updatedPlayer.pokemon.stats.specialDefense,
+        attackPower: oldAttackPower,
         speed: updatedPlayer.pokemon.stats.speed,
         shield: updatedPlayer.shield,
       };

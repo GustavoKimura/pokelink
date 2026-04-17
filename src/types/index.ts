@@ -108,10 +108,7 @@ export interface GameRunState {
 export interface PreviousStats {
   level: number;
   maxHp: number;
-  attack: number;
-  specialAttack: number;
-  defense: number;
-  specialDefense: number;
+  attackPower: number;
   speed: number;
   shield: number;
 }

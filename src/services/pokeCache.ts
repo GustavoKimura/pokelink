@@ -45,17 +45,15 @@ interface PokemonSpecies {
 }
 
 interface EvolutionChain {
-  chain: EvolutionNode;
-}
-
-interface EvolutionNode {
-  species: {
-    name: string;
+  chain: {
+    species: {
+      name: string;
+    };
+    evolves_to: EvolutionChain["chain"][];
+    evolution_details?: {
+      min_level: number | null;
+    }[];
   };
-  evolves_to: EvolutionNode[];
-  evolution_details: {
-    min_level: number | null;
-  }[];
 }
 
 async function fetchAndCache<T>(url: string, key: string): Promise<T> {

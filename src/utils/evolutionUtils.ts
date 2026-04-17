@@ -20,7 +20,7 @@ export async function checkEvolution(
       if (current.species.name === pokemon.name.toLowerCase()) {
         if (current.evolves_to.length > 0) {
           for (const evolution of current.evolves_to) {
-            const minLevel = evolution.evolution_details[0]?.min_level;
+            const minLevel = evolution.evolution_details?.[0]?.min_level;
             if (minLevel && level >= minLevel) {
               const evolvedPokemon = await getPokemon(evolution.species.name);
               return transformApiPokemon(evolvedPokemon);

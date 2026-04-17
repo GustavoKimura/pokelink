@@ -3,8 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { STARTER_OPTIONS } from "../constants/starters";
 import { getPokemon } from "../services/pokeCache";
 import { transformApiPokemon } from "../utils/pokemonTransform";
-import type { Pokemon } from "../types";
+import type { Pokemon, Card, PlayerPokemon } from "../types";
 import { useAccountStore } from "../store/accountStore";
+import {
+  calculateMaxHp,
+  calculateShield,
+  calculateCardDisplayDamage,
+} from "../utils/battleUtils";
 
 export default function StarterSelection() {
   const navigate = useNavigate();
@@ -66,6 +71,31 @@ export default function StarterSelection() {
           const pokemon = startersData[starter.id];
           const unlocked = isUnlocked(starter.id);
 
+          const sampleMove: Card = {
+            id: "sample",
+            name: "Sample",
+            type: "normal",
+            power: 40,
+            pp: 35,
+            energyCost: 1,
+            description: "",
+            damageClass: "physical",
+          };
+          const attackPower = pokemon
+            ? calculateCardDisplayDamage(
+                { pokemon, level: 1 } as PlayerPokemon,
+                sampleMove,
+              )
+            : 0;
+          const shield = pokemon
+            ? calculateShield(
+                pokemon.stats.defense,
+                pokemon.stats.specialDefense,
+                1,
+              )
+            : 0;
+          const maxHp = pokemon ? calculateMaxHp(pokemon.stats.hp, 1) : 0;
+
           return (
             <div
               key={starter.id}
@@ -126,13 +156,11 @@ export default function StarterSelection() {
                       {starter.description}
                     </p>
 
-                    <div className="grid grid-cols-3 gap-1 text-xs">
-                      <div>HP: {pokemon.stats.hp}</div>
-                      <div>ATK: {pokemon.stats.attack}</div>
-                      <div>DEF: {pokemon.stats.defense}</div>
-                      <div>SpA: {pokemon.stats.specialAttack}</div>
-                      <div>SpD: {pokemon.stats.specialDefense}</div>
-                      <div>SPD: {pokemon.stats.speed}</div>
+                    <div className="grid grid-cols-2 gap-1 text-xs">
+                      <div>HP: {maxHp}</div>
+                      <div>Ataque: {attackPower}</div>
+                      <div>Escudo: {shield}</div>
+                      <div>Velocidade: {pokemon.stats.speed}</div>
                     </div>
                   </>
                 )}

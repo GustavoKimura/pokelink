@@ -10,10 +10,7 @@ interface LevelUpModalProps {
   previousStats: {
     level: number;
     maxHp: number;
-    attack: number;
-    specialAttack: number;
-    defense: number;
-    specialDefense: number;
+    attackPower: number;
     speed: number;
     shield: number;
   };
@@ -58,6 +55,18 @@ export default function LevelUpModal({
     player.level,
   );
 
+  const sampleMove: Card = {
+    id: "sample",
+    name: "Sample",
+    type: "normal",
+    power: 40,
+    pp: 35,
+    energyCost: 1,
+    description: "",
+    damageClass: "physical",
+  };
+  const newAttackPower = calculateCardDisplayDamage(player, sampleMove);
+
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 overflow-y-auto py-8">
       <div className="bg-gray-800 p-6 rounded-xl max-w-4xl w-full mx-4">
@@ -77,38 +86,18 @@ export default function LevelUpModal({
                 <span className="text-green-400">{newMaxHp}</span>
               </p>
               <p>
-                Ataque: {previousStats.attack} →{" "}
-                <span className="text-green-400">
-                  {player.pokemon.stats.attack}
-                </span>
+                Ataque: {previousStats.attackPower} →{" "}
+                <span className="text-green-400">{newAttackPower}</span>
               </p>
               <p>
-                Ataque Especial: {previousStats.specialAttack} →{" "}
-                <span className="text-green-400">
-                  {player.pokemon.stats.specialAttack}
-                </span>
-              </p>
-              <p>
-                Defesa: {previousStats.defense} →{" "}
-                <span className="text-green-400">
-                  {player.pokemon.stats.defense}
-                </span>
-              </p>
-              <p>
-                Defesa Especial: {previousStats.specialDefense} →{" "}
-                <span className="text-green-400">
-                  {player.pokemon.stats.specialDefense}
-                </span>
+                Escudo: {previousStats.shield} →{" "}
+                <span className="text-green-400">{newShield}</span>
               </p>
               <p>
                 Velocidade: {previousStats.speed} →{" "}
                 <span className="text-green-400">
                   {player.pokemon.stats.speed}
                 </span>
-              </p>
-              <p>
-                Escudo: {previousStats.shield} →{" "}
-                <span className="text-green-400">{newShield}</span>
               </p>
             </div>
           </div>
