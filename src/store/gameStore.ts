@@ -9,6 +9,7 @@ interface GameStore {
   completeNode: (nodeId: string) => void;
   setCurrentNode: (nodeId: string | null) => void;
   updatePlayer: (player: PlayerPokemon) => void;
+  setRunPhase: (phase: GameRunState["runPhase"]) => void;
   resetRun: () => void;
 }
 
@@ -64,6 +65,11 @@ export const useGameStore = create<GameStore>((set) => ({
   updatePlayer: (player) =>
     set((state) => ({
       runState: { ...state.runState, player },
+    })),
+
+  setRunPhase: (phase) =>
+    set((state) => ({
+      runState: { ...state.runState, runPhase: phase },
     })),
 
   resetRun: () => set({ runState: initialRunState }),

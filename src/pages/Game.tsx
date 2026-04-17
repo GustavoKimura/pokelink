@@ -42,6 +42,7 @@ export default function Game() {
     completeNode,
     setCurrentNode,
     updatePlayer,
+    setRunPhase,
   } = useGameStore();
 
   const initGame = useCallback(async () => {
@@ -132,12 +133,14 @@ export default function Game() {
     };
 
     dispatch({ type: "INIT_BATTLE", player: runState.player, enemy });
+    setRunPhase("battle");
     setLoading(false);
   };
 
   const handleBattleEnd = async (victory: boolean) => {
     if (!victory) {
       setShowGameOver(true);
+      setRunPhase("defeat");
       return;
     }
 
@@ -176,6 +179,7 @@ export default function Game() {
         setLevelUpOptions(options);
         updatePlayer(updatedPlayer);
         setShowLevelUp(true);
+        setRunPhase("map");
         return;
       }
     }
@@ -185,8 +189,10 @@ export default function Game() {
 
     if (currentNode.type === "boss") {
       setShowVictory(true);
+      setRunPhase("victory");
     } else {
       setCurrentNode(null);
+      setRunPhase("map");
     }
   };
 
@@ -204,11 +210,13 @@ export default function Game() {
     setShowLevelUp(false);
     setLevelUpOptions([]);
     setCurrentNode(null);
+    setRunPhase("map");
   };
 
   const handleRestContinue = () => {
     setShowRest(false);
     setCurrentNode(null);
+    setRunPhase("map");
   };
 
   if (loading) {

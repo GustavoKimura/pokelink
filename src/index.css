@@ -7,3 +7,7 @@
 .react-flow__node {
   z-index: 10 !important;
 }
+
+.react-flow__attribution {
+  display: none !important;
+}

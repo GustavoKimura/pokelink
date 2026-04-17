@@ -136,7 +136,7 @@ export default function MapScreen({
           elevateEdgesOnSelect={false}
         >
           <Background color="#374151" gap={16} />
-          <Controls />
+          <Controls showFitView={false} showInteractive={false} />
         </ReactFlow>
       </div>
 
