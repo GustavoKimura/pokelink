@@ -20,25 +20,42 @@ type BattleAction =
 
 function battleReducer(state: BattleState, action: BattleAction): BattleState {
   switch (action.type) {
-    case "INIT_BATTLE":
+    case "INIT_BATTLE": {
+      const turnOrder = [action.player, action.enemy].sort(
+        (a, b) => b.pokemon.stats.speed - a.pokemon.stats.speed,
+      );
+      const firstIsPlayer = turnOrder[0] === action.player;
       return {
         ...state,
-        phase: "battle",
+        phase: firstIsPlayer ? "battle" : "enemy_turn",
         player: action.player,
         enemies: [action.enemy],
-        turnOrder: [action.player, action.enemy].sort(
-          (a, b) => b.pokemon.stats.speed - a.pokemon.stats.speed,
-        ),
+        turnOrder,
         currentTurnIndex: 0,
         log: [`Batalha iniciada contra ${action.enemy.pokemon.name}!`],
       };
+    }
 
-    case "SELECT_MOVE":
-      return {
-        ...state,
-        selectedMove: action.move,
-        selectingTarget: state.enemies.length > 1,
-      };
+    case "SELECT_MOVE": {
+      if (state.phase !== "battle" || !state.player) return state;
+      const move = action.move;
+      if (move.energyCost > state.player.energy) return state;
+
+      if (state.enemies.length === 1) {
+        return battleReducer(state, {
+          type: "EXECUTE_ATTACK",
+          attacker: state.player,
+          defender: state.enemies[0],
+          move,
+        });
+      } else {
+        return {
+          ...state,
+          selectedMove: move,
+          selectingTarget: true,
+        };
+      }
+    }
 
     case "SELECT_TARGET": {
       if (!state.selectedMove || !state.player) return state;
@@ -87,7 +104,7 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 
       return {
         ...state,
-        player: updatedPlayer as PlayerPokemon,
+        player: updatedPlayer as PlayerPokemon | null,
         enemies: updatedEnemies,
         log: newLog,
         selectedMove: null,

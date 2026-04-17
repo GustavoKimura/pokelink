@@ -39,8 +39,8 @@ export default function BattleScreen({
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
-      <div className="flex-1 flex flex-col items-center justify-center relative">
-        <div className="w-full max-w-4xl flex justify-center mb-8">
+      <div className="flex-1 flex flex-col items-center justify-center px-4">
+        <div className="w-full max-w-md flex justify-center mb-8">
           <PokemonStatus pokemon={currentEnemy} isPlayer={false} />
         </div>
 
@@ -48,7 +48,7 @@ export default function BattleScreen({
           <BattleLog messages={log} />
         </div>
 
-        <div className="w-full max-w-4xl flex justify-center">
+        <div className="w-full max-w-md flex justify-center">
           <PokemonStatus pokemon={player} isPlayer />
         </div>
       </div>
@@ -69,7 +69,7 @@ export default function BattleScreen({
                     alt={enemy.pokemon.name}
                     className="w-24 h-24"
                   />
-                  <p>{enemy.pokemon.name}</p>
+                  <p className="capitalize">{enemy.pokemon.name}</p>
                 </button>
               ))}
             </div>
@@ -83,24 +83,26 @@ export default function BattleScreen({
         </div>
       )}
 
-      <div className="bg-gray-800/95 p-4">
-        <CardHand
-          cards={player.hand}
-          energy={player.energy}
-          canPlay={isPlayerTurn}
-          onSelectCard={onSelectMove}
-        />
+      <div className="bg-gray-800/95 p-4 border-t border-gray-700">
+        <div className="max-w-4xl mx-auto">
+          <CardHand
+            cards={player.hand}
+            energy={player.energy}
+            canPlay={isPlayerTurn}
+            onSelectCard={onSelectMove}
+          />
 
-        {isPlayerTurn && (
-          <div className="flex justify-end mt-4">
-            <button
-              onClick={onEndTurn}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg"
-            >
-              Passar Turno
-            </button>
-          </div>
-        )}
+          {isPlayerTurn && (
+            <div className="flex justify-center mt-4">
+              <button
+                onClick={onEndTurn}
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold"
+              >
+                Passar Turno
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
