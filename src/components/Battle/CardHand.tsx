@@ -51,6 +51,7 @@ export default function CardHand({
           const canAfford = energy >= card.energyCost;
           const bgColor = typeColors[card.type] || "bg-gray-500";
           const displayDamage = calculateCardDisplayDamage(player, card);
+          const damageIcon = card.damageClass === "physical" ? "👊" : "✨";
 
           return (
             <button
@@ -68,7 +69,9 @@ export default function CardHand({
               `}
             >
               <h4 className="font-bold capitalize">{card.name}</h4>
-              <p className="text-sm">💥 {displayDamage}</p>
+              <p className="text-sm">
+                {damageIcon} {displayDamage}
+              </p>
               <p className="text-sm">⚡ {card.energyCost}</p>
               <p className="text-xs mt-1">{card.type}</p>
             </button>

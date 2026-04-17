@@ -43,6 +43,7 @@ export interface Card {
   pp: number;
   energyCost: 1 | 2 | 3;
   description: string;
+  damageClass: "physical" | "special" | "status";
 }
 
 export interface PlayerPokemon {

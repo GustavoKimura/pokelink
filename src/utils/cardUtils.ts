@@ -31,6 +31,7 @@ export async function buildInitialDeck(pokemon: Pokemon): Promise<Card[]> {
         pp: moveData.pp,
         energyCost: calculateEnergyCost(moveData.pp),
         description: "",
+        damageClass: moveData.damage_class.name as "physical" | "special",
       });
     }
   }
@@ -45,6 +46,7 @@ export async function buildInitialDeck(pokemon: Pokemon): Promise<Card[]> {
       pp: 35,
       energyCost: 1,
       description: "",
+      damageClass: "physical",
     };
     for (let i = 0; i < 5; i++) deck.push({ ...tackle });
     return deck;

@@ -19,10 +19,12 @@ export function calculateDamage(
 ): number {
   const level = attacker.level;
   const power = move.power;
-  const attack =
-    (attacker.pokemon.stats.attack + attacker.pokemon.stats.specialAttack) / 2;
+  const attackStat =
+    move.damageClass === "physical"
+      ? attacker.pokemon.stats.attack
+      : attacker.pokemon.stats.specialAttack;
 
-  const baseDamage = (((2 * level) / 5 + 2) * power * attack) / 50 + 2;
+  const baseDamage = (((2 * level) / 5 + 2) * power * attackStat) / 50 + 2;
   const finalDamage = Math.floor(baseDamage);
 
   return Math.max(1, finalDamage);
@@ -34,10 +36,12 @@ export function calculateCardDisplayDamage(
 ): number {
   const level = attacker.level;
   const power = move.power;
-  const attack =
-    (attacker.pokemon.stats.attack + attacker.pokemon.stats.specialAttack) / 2;
+  const attackStat =
+    move.damageClass === "physical"
+      ? attacker.pokemon.stats.attack
+      : attacker.pokemon.stats.specialAttack;
 
-  const baseDamage = (((2 * level) / 5 + 2) * power * attack) / 50 + 2;
+  const baseDamage = (((2 * level) / 5 + 2) * power * attackStat) / 50 + 2;
   return Math.floor(baseDamage);
 }
 
