@@ -88,7 +88,8 @@ export default function MapScreen({
   };
 
   const selectedNode = nodes.find((n) => n.id === currentNodeId);
-  const canProceed = selectedNode && !selectedNode.completed;
+  const canProceed =
+    selectedNode && selectedNode.unlocked && !selectedNode.completed;
 
   const handleQuitRun = () => {
     resetRun();

@@ -227,6 +227,10 @@ export default function Game() {
     );
   }
 
+  if (runState.runPhase === "defeat") {
+    return <GameOverModal />;
+  }
+
   return (
     <>
       {runState.runPhase === "map" && (

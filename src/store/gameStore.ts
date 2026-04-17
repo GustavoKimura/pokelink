@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { GameRunState, PlayerPokemon } from "../types";
-import { generateMap, unlockNextNodes } from "../utils/mapGenerator";
+import { generateMap } from "../utils/mapGenerator";
 
 interface GameStore {
   runState: GameRunState;
@@ -44,14 +44,28 @@ export const useGameStore = create<GameStore>((set) => ({
 
   completeNode: (nodeId) =>
     set((state) => {
-      const updatedNodes = state.runState.mapNodes.map((node) =>
-        node.id === nodeId ? { ...node, completed: true } : node,
+      const completedNode = state.runState.mapNodes.find(
+        (n) => n.id === nodeId,
       );
-      const unlockedNodes = unlockNextNodes(updatedNodes, nodeId);
+      if (!completedNode) return state;
+
+      const updatedNodes = state.runState.mapNodes.map((node) => {
+        if (node.id === nodeId) {
+          return { ...node, completed: true };
+        }
+        if (completedNode.connections.includes(node.id)) {
+          return { ...node, unlocked: true };
+        }
+        if (!node.completed) {
+          return { ...node, unlocked: false };
+        }
+        return node;
+      });
+
       return {
         runState: {
           ...state.runState,
-          mapNodes: unlockedNodes,
+          mapNodes: updatedNodes,
           runPhase: "map",
         },
       };
