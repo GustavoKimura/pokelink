@@ -56,26 +56,53 @@ export function generateMap(): MapNode[] {
     const currentRowNodes = nodes.filter((n) => n.position.y === currentRowY);
     const nextRowNodes = nodes.filter((n) => n.position.y === nextRowY);
 
-    currentRowNodes.forEach((node) => {
-      const possibleConnections = nextRowNodes.filter(
-        (n) => Math.abs(n.position.x - node.position.x) <= 250,
-      );
+    for (const node of currentRowNodes) {
+      const currentCol = Math.floor((node.position.x - 100) / 200);
+      const possibleTargets = nextRowNodes.filter((n) => {
+        const targetCol = Math.floor((n.position.x - 100) / 200);
+        return Math.abs(targetCol - currentCol) <= 1;
+      });
 
-      const connectionCount = Math.min(2, possibleConnections.length);
+      if (possibleTargets.length === 0) continue;
+
+      const connectionCount = Math.min(2, possibleTargets.length);
       for (let i = 0; i < connectionCount; i++) {
         const target =
-          possibleConnections[
-            Math.floor(Math.random() * possibleConnections.length)
-          ];
+          possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
         if (!node.connections.includes(target.id)) {
           node.connections.push(target.id);
         }
       }
 
-      if (node.connections.length === 0 && possibleConnections.length > 0) {
-        node.connections.push(possibleConnections[0].id);
+      if (node.connections.length === 0 && possibleTargets.length > 0) {
+        node.connections.push(possibleTargets[0].id);
       }
-    });
+    }
+
+    for (const target of nextRowNodes) {
+      const hasIncoming = currentRowNodes.some((src) =>
+        src.connections.includes(target.id),
+      );
+      if (!hasIncoming) {
+        const targetCol = Math.floor((target.position.x - 100) / 200);
+        const sources = currentRowNodes.filter((src) => {
+          const srcCol = Math.floor((src.position.x - 100) / 200);
+          return Math.abs(srcCol - targetCol) <= 1;
+        });
+        if (sources.length > 0) {
+          const source = sources[Math.floor(Math.random() * sources.length)];
+          if (!source.connections.includes(target.id)) {
+            source.connections.push(target.id);
+          }
+        } else {
+          const source =
+            currentRowNodes[Math.floor(Math.random() * currentRowNodes.length)];
+          if (!source.connections.includes(target.id)) {
+            source.connections.push(target.id);
+          }
+        }
+      }
+    }
   }
 
   return nodes;

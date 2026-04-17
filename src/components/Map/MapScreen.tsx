@@ -23,10 +23,9 @@ interface MapScreenProps {
 const nodeTypes = {};
 const edgeTypes = {};
 const defaultEdgeOptions = {
-  type: "smoothstep",
+  type: "default",
   markerEnd: { type: MarkerType.ArrowClosed, color: "#6b7280" },
   style: { stroke: "#6b7280", strokeWidth: 2 },
-  pathOptions: { borderRadius: 10 },
 };
 
 export default function MapScreen({
