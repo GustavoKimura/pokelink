@@ -1,5 +1,7 @@
 import type { PlayerPokemon, EnemyPokemon, Card } from "../types";
 
+const DAMAGE_SCALING_FACTOR = 0.04;
+
 export function calculateMaxHp(baseHp: number, level: number): number {
   return Math.floor(((2 * baseHp + 31) * level) / 100) + level + 10;
 }
@@ -10,7 +12,7 @@ export function calculateShield(
   level: number,
 ): number {
   const avgDefense = (defense + specialDefense) / 2;
-  return Math.floor((avgDefense * level) / 5) + 3;
+  return Math.floor((avgDefense * level) / 20) + 1;
 }
 
 export function calculateDamage(
@@ -25,24 +27,14 @@ export function calculateDamage(
       : attacker.pokemon.stats.specialAttack;
 
   const baseDamage = (((2 * level) / 5 + 2) * power * attackStat) / 50 + 2;
-  const finalDamage = Math.floor(baseDamage);
-
-  return Math.max(1, finalDamage);
+  return Math.max(1, Math.floor(baseDamage * DAMAGE_SCALING_FACTOR));
 }
 
 export function calculateCardDisplayDamage(
   attacker: PlayerPokemon,
   move: Card,
 ): number {
-  const level = attacker.level;
-  const power = move.power;
-  const attackStat =
-    move.damageClass === "physical"
-      ? attacker.pokemon.stats.attack
-      : attacker.pokemon.stats.specialAttack;
-
-  const baseDamage = (((2 * level) / 5 + 2) * power * attackStat) / 50 + 2;
-  return Math.floor(baseDamage);
+  return calculateDamage(attacker, move);
 }
 
 export function calculateXpGain(

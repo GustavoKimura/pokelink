@@ -29,6 +29,11 @@ interface ApiPokemon {
 }
 
 export function transformApiPokemon(apiData: ApiPokemon): Pokemon {
+  const getStat = (name: string): number => {
+    const stat = apiData.stats.find((s) => s.stat.name === name);
+    return stat ? stat.base_stat : 0;
+  };
+
   return {
     id: apiData.id,
     name: apiData.name,
@@ -43,18 +48,12 @@ export function transformApiPokemon(apiData: ApiPokemon): Pokemon {
       official: getOfficialArtworkUrl(apiData.id),
     },
     stats: {
-      hp: apiData.stats.find((s) => s.stat.name === "hp")?.base_stat || 0,
-      attack:
-        apiData.stats.find((s) => s.stat.name === "attack")?.base_stat || 0,
-      defense:
-        apiData.stats.find((s) => s.stat.name === "defense")?.base_stat || 0,
-      specialAttack:
-        apiData.stats.find((s) => s.stat.name === "special-attack")
-          ?.base_stat || 0,
-      specialDefense:
-        apiData.stats.find((s) => s.stat.name === "special-defense")
-          ?.base_stat || 0,
-      speed: apiData.stats.find((s) => s.stat.name === "speed")?.base_stat || 0,
+      hp: getStat("hp"),
+      attack: getStat("attack"),
+      defense: getStat("defense"),
+      specialAttack: getStat("special-attack"),
+      specialDefense: getStat("special-defense"),
+      speed: getStat("speed"),
     },
     moves: apiData.moves
       .filter((m) =>
