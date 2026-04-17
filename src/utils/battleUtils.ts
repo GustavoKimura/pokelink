@@ -11,8 +11,8 @@ export function calculateShield(
   specialDefense: number,
   level: number,
 ): number {
-  const avgDefense = (defense + specialDefense) / 2;
-  return Math.floor((avgDefense * level) / 20) + 1;
+  const maxDefense = Math.max(defense, specialDefense);
+  return Math.floor((maxDefense * level) / 20) + 1;
 }
 
 export function calculateDamage(
