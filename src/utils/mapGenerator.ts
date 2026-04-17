@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import type { MapNode, NodeType } from "../types/map";
+import type { MapNode } from "../types/map";
 
 const STARTER_IDS = [133, 92, 246];
 const BOSS_ID = 6;
@@ -14,7 +14,7 @@ export function generateMap(): MapNode[] {
       const isBossRow = row === rows - 1;
       const isBottomRow = row === 0;
 
-      let type: NodeType;
+      let type: "battle" | "rest" | "boss";
       let pokemonId: number | undefined;
 
       if (isBossRow) {

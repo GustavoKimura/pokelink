@@ -1,6 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import ReactFlow, { Background, Controls } from "reactflow";
-import type { Node, Edge } from "reactflow";
+import { useMemo } from "react";
+import ReactFlow, {
+  Background,
+  Controls,
+  type Node,
+  type Edge,
+} from "reactflow";
 import "reactflow/dist/style.css";
 import type { MapNode } from "../../types/map";
 import { useGameStore } from "../../store/gameStore";
@@ -13,12 +18,6 @@ interface MapScreenProps {
   onProceed: () => void;
 }
 
-const nodeTypes = {
-  battle: { background: "#ef4444", border: "#dc2626" },
-  rest: { background: "#10b981", border: "#059669" },
-  boss: { background: "#8b5cf6", border: "#7c3aed" },
-};
-
 export default function MapScreen({
   nodes,
   currentNodeId,
@@ -29,38 +28,44 @@ export default function MapScreen({
   const { resetAccount } = useAccountStore();
   const { resetRun } = useGameStore();
 
-  const flowNodes: Node[] = nodes.map((node) => ({
-    id: node.id,
-    position: node.position,
-    data: {
-      label: `${node.type === "battle" ? "⚔️" : node.type === "rest" ? "🏕️" : "👑"} Nv.${node.level}`,
-      type: node.type,
-      completed: node.completed,
-      unlocked: node.unlocked,
-      current: node.id === currentNodeId,
-    },
-    style: {
-      background: nodeTypes[node.type].background,
-      border: `2px solid ${nodeTypes[node.type].border}`,
-      color: "white",
-      borderRadius: "8px",
-      padding: "10px",
-      width: 120,
-      opacity: node.completed ? 0.5 : node.unlocked ? 1 : 0.4,
-      cursor: node.unlocked && !node.completed ? "pointer" : "not-allowed",
-      boxShadow: node.id === currentNodeId ? "0 0 0 3px #fbbf24" : "none",
-    },
-  }));
+  const { flowNodes, flowEdges } = useMemo(() => {
+    const nodeTypeStyles = {
+      battle: { background: "#ef4444", border: "#dc2626" },
+      rest: { background: "#10b981", border: "#059669" },
+      boss: { background: "#8b5cf6", border: "#7c3aed" },
+    };
 
-  const flowEdges: Edge[] = nodes.flatMap((node) =>
-    node.connections.map((targetId) => ({
-      id: `${node.id}-${targetId}`,
-      source: node.id,
-      target: targetId,
-      animated: true,
-      style: { stroke: "#6b7280" },
-    })),
-  );
+    const flowNodes: Node[] = nodes.map((node) => ({
+      id: node.id,
+      position: node.position,
+      data: {
+        label: `${node.type === "battle" ? "⚔️" : node.type === "rest" ? "🏕️" : "👑"} Nv.${node.level}`,
+      },
+      style: {
+        background: nodeTypeStyles[node.type].background,
+        border: `2px solid ${nodeTypeStyles[node.type].border}`,
+        color: "white",
+        borderRadius: "8px",
+        padding: "10px",
+        width: 120,
+        opacity: node.completed ? 0.5 : node.unlocked ? 1 : 0.4,
+        cursor: node.unlocked && !node.completed ? "pointer" : "not-allowed",
+        boxShadow: node.id === currentNodeId ? "0 0 0 3px #fbbf24" : "none",
+      },
+    }));
+
+    const flowEdges: Edge[] = nodes.flatMap((node) =>
+      node.connections.map((targetId) => ({
+        id: `${node.id}-${targetId}`,
+        source: node.id,
+        target: targetId,
+        animated: true,
+        style: { stroke: "#6b7280" },
+      })),
+    );
+
+    return { flowNodes, flowEdges };
+  }, [nodes, currentNodeId]);
 
   const handleNodeClick = (_: React.MouseEvent, node: Node) => {
     const mapNode = nodes.find((n) => n.id === node.id);
@@ -84,7 +89,7 @@ export default function MapScreen({
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col">
+    <div className="h-screen bg-gray-900 text-white flex flex-col">
       <div className="p-4 bg-gray-800 flex justify-between items-center">
         <h1 className="text-2xl font-bold text-yellow-400">PokéLink - Mapa</h1>
         <div className="flex gap-2">
@@ -103,7 +108,7 @@ export default function MapScreen({
         </div>
       </div>
 
-      <div className="flex-1">
+      <div className="flex-1 w-full">
         <ReactFlow
           nodes={flowNodes}
           edges={flowEdges}
