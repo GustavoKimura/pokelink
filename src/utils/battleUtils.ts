@@ -4,34 +4,38 @@ export function calculateMaxHp(baseHp: number, level: number): number {
   return Math.floor(((2 * baseHp + 31) * level) / 100) + level + 10;
 }
 
-export function calculateShield(defense: number, level: number): number {
-  return Math.floor((defense * level) / 10) + 5;
+export function calculateShield(
+  defense: number,
+  specialDefense: number,
+  level: number,
+): number {
+  const avgDefense = (defense + specialDefense) / 2;
+  return Math.floor((avgDefense * level) / 5) + 3;
 }
 
 export function calculateDamage(
   attacker: PlayerPokemon | EnemyPokemon,
-  defender: PlayerPokemon | EnemyPokemon,
   move: Card,
 ): number {
   const level = attacker.level;
   const power = move.power;
-  const attack = attacker.pokemon.stats.attack;
-  const defense = defender.pokemon.stats.defense;
+  const attack =
+    (attacker.pokemon.stats.attack + attacker.pokemon.stats.specialAttack) / 2;
 
-  const baseDamage =
-    (((2 * level) / 5 + 2) * power * (attack / defense)) / 50 + 2;
+  const baseDamage = (((2 * level) / 5 + 2) * power * attack) / 50 + 2;
   const finalDamage = Math.floor(baseDamage);
 
   return Math.max(1, finalDamage);
 }
 
-export function calculateCardDamage(
+export function calculateCardDisplayDamage(
   attacker: PlayerPokemon,
   move: Card,
 ): number {
   const level = attacker.level;
   const power = move.power;
-  const attack = attacker.pokemon.stats.attack;
+  const attack =
+    (attacker.pokemon.stats.attack + attacker.pokemon.stats.specialAttack) / 2;
 
   const baseDamage = (((2 * level) / 5 + 2) * power * attack) / 50 + 2;
   return Math.floor(baseDamage);

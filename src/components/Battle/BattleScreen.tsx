@@ -119,6 +119,7 @@ export default function BattleScreen({
       <div className="bg-gray-800/95 p-4 border-t border-gray-700">
         <div className="max-w-4xl mx-auto">
           <CardHand
+            player={player}
             cards={player.hand}
             energy={player.energy}
             canPlay={isPlayerTurn}

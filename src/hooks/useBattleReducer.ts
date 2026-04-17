@@ -31,6 +31,7 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
         ...action.player,
         shield: calculateShield(
           action.player.pokemon.stats.defense,
+          action.player.pokemon.stats.specialDefense,
           action.player.level,
         ),
       };
@@ -38,6 +39,7 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
         ...action.enemy,
         shield: calculateShield(
           action.enemy.pokemon.stats.defense,
+          action.enemy.pokemon.stats.specialDefense,
           action.enemy.level,
         ),
       };
@@ -100,7 +102,7 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 
     case "EXECUTE_ATTACK": {
       const { attacker, defender, move } = action;
-      const damage = calculateDamage(attacker, defender, move);
+      const damage = calculateDamage(attacker, move);
 
       let remainingDamage = damage;
       let newShield = defender.shield;

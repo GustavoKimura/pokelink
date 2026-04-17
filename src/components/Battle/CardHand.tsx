@@ -1,6 +1,8 @@
-import type { Card } from "../../types";
+import type { Card, PlayerPokemon } from "../../types";
+import { calculateCardDisplayDamage } from "../../utils/battleUtils";
 
 interface CardHandProps {
+  player: PlayerPokemon;
   cards: Card[];
   energy: number;
   canPlay: boolean;
@@ -29,6 +31,7 @@ const typeColors: Record<string, string> = {
 };
 
 export default function CardHand({
+  player,
   cards,
   energy,
   canPlay,
@@ -47,6 +50,7 @@ export default function CardHand({
         {cards.map((card, index) => {
           const canAfford = energy >= card.energyCost;
           const bgColor = typeColors[card.type] || "bg-gray-500";
+          const displayDamage = calculateCardDisplayDamage(player, card);
 
           return (
             <button
@@ -64,7 +68,7 @@ export default function CardHand({
               `}
             >
               <h4 className="font-bold capitalize">{card.name}</h4>
-              <p className="text-sm">💥 {card.power}</p>
+              <p className="text-sm">💥 {displayDamage}</p>
               <p className="text-sm">⚡ {card.energyCost}</p>
               <p className="text-xs mt-1">{card.type}</p>
             </button>
