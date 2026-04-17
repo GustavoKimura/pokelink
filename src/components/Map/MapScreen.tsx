@@ -5,6 +5,8 @@ import ReactFlow, {
   Controls,
   type Node,
   type Edge,
+  MarkerType,
+  Position,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import type { MapNode } from "../../types/map";
@@ -17,6 +19,15 @@ interface MapScreenProps {
   onNodeSelect: (nodeId: string) => void;
   onProceed: () => void;
 }
+
+const nodeTypes = {};
+const edgeTypes = {};
+const defaultEdgeOptions = {
+  type: "smoothstep",
+  markerEnd: { type: MarkerType.ArrowClosed, color: "#6b7280" },
+  style: { stroke: "#6b7280", strokeWidth: 2 },
+  pathOptions: { borderRadius: 10 },
+};
 
 export default function MapScreen({
   nodes,
@@ -52,6 +63,8 @@ export default function MapScreen({
         cursor: node.unlocked && !node.completed ? "pointer" : "not-allowed",
         boxShadow: node.id === currentNodeId ? "0 0 0 3px #fbbf24" : "none",
       },
+      sourcePosition: Position.Top,
+      targetPosition: Position.Bottom,
     }));
 
     const flowEdges: Edge[] = nodes.flatMap((node) =>
@@ -59,8 +72,9 @@ export default function MapScreen({
         id: `${node.id}-${targetId}`,
         source: node.id,
         target: targetId,
+        sourceHandle: "top",
+        targetHandle: "bottom",
         animated: true,
-        style: { stroke: "#6b7280" },
       })),
     );
 
@@ -112,11 +126,15 @@ export default function MapScreen({
         <ReactFlow
           nodes={flowNodes}
           edges={flowEdges}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          defaultEdgeOptions={defaultEdgeOptions}
           onNodeClick={handleNodeClick}
           fitView
           nodesDraggable={false}
           nodesConnectable={false}
           elementsSelectable={false}
+          elevateEdgesOnSelect={false}
         >
           <Background color="#374151" gap={16} />
           <Controls />

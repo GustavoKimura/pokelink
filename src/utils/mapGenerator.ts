@@ -35,12 +35,14 @@ export function generateMap(): MapNode[] {
 
       const level = 2 + row * 3 + Math.floor(Math.random() * 3);
 
+      const y = (rows - 1 - row) * 150 + 100;
+
       nodes.push({
         id: uuidv4(),
         type,
         level,
         pokemonId,
-        position: { x: col * 200 + 100, y: row * 150 + 100 },
+        position: { x: col * 200 + 100, y },
         connections: [],
         completed: false,
         unlocked: row === 0,
@@ -49,12 +51,10 @@ export function generateMap(): MapNode[] {
   }
 
   for (let row = 0; row < rows - 1; row++) {
-    const currentRowNodes = nodes.filter(
-      (n) => n.position.y === row * 150 + 100,
-    );
-    const nextRowNodes = nodes.filter(
-      (n) => n.position.y === (row + 1) * 150 + 100,
-    );
+    const currentRowY = (rows - 1 - row) * 150 + 100;
+    const nextRowY = (rows - 1 - (row + 1)) * 150 + 100;
+    const currentRowNodes = nodes.filter((n) => n.position.y === currentRowY);
+    const nextRowNodes = nodes.filter((n) => n.position.y === nextRowY);
 
     currentRowNodes.forEach((node) => {
       const possibleConnections = nextRowNodes.filter(
