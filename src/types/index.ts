@@ -47,6 +47,7 @@ export interface Card {
   description: string;
   damageClass: "physical" | "special" | "status";
   temporary?: boolean;
+  typeless?: boolean;
 }
 
 export interface PlayerPokemon {

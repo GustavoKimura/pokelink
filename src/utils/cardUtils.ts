@@ -90,6 +90,6 @@ export function createStruggleCard(): Card {
     energyCost: 1,
     description: "",
     damageClass: "physical",
-    temporary: true,
+    typeless: true,
   };
 }

@@ -28,11 +28,10 @@ const isPlayerUnit = (
   return "runXp" in unit;
 };
 
-function drawCardsForUnit<T extends PlayerPokemon | EnemyPokemon>(unit: T): T {
-  const newDiscard = [
-    ...unit.discardPile,
-    ...unit.hand.filter((c) => !c.temporary),
-  ];
+function prepareForTurnStart<T extends PlayerPokemon | EnemyPokemon>(
+  unit: T,
+): T {
+  const newDiscard = [...unit.discardPile, ...unit.hand];
   const {
     drawn: newHand,
     newDeck: newDrawPile,
@@ -74,9 +73,9 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
       let initialPlayer = playerWithShield;
       let initialEnemy = enemyWithShield;
       if (firstIsPlayer) {
-        initialPlayer = drawCardsForUnit(playerWithShield);
+        initialPlayer = prepareForTurnStart(playerWithShield);
       } else {
-        initialEnemy = drawCardsForUnit(enemyWithShield);
+        initialEnemy = prepareForTurnStart(enemyWithShield);
       }
 
       return {
@@ -136,7 +135,11 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 
     case "EXECUTE_ATTACK": {
       const { attacker, defender, move } = action;
-      const effectiveness = getEffectiveness(move.type, defender.pokemon.types);
+      const effectiveness = getEffectiveness(
+        move.type,
+        defender.pokemon.types,
+        move.typeless,
+      );
       const rawDamage = calculateDamage(attacker, move);
       const damage = Math.floor(rawDamage * effectiveness);
 
@@ -172,19 +175,25 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
       const newLog = [...state.log];
 
       if (effectiveness > 1) effectivenessMessage = " Foi super efetivo!";
-      if (effectiveness < 1 && effectiveness > 0)
+      else if (effectiveness < 1 && effectiveness > 0)
         effectivenessMessage = " Não foi muito efetivo...";
-      if (effectiveness === 0) {
-        effectivenessMessage = " Não afetou o alvo!";
-        const despairMessage = `${attacker.pokemon.name} entrou em desespero, pois não afetou ${defender.pokemon.name}!`;
-        newLog.push(despairMessage);
-      }
 
       const shieldMessage =
         shieldAbsorbed > 0 ? ` (Escudo absorveu ${shieldAbsorbed})` : "";
-      newLog.push(
-        `${attacker.pokemon.name} usou ${move.name} e causou ${damage} de dano${shieldMessage}!${effectivenessMessage}`,
-      );
+
+      if (effectiveness === 0) {
+        effectivenessMessage = " Não afetou o alvo!";
+        newLog.push(
+          `${attacker.pokemon.name} usou ${move.name} e causou 0 de dano${shieldMessage}!${effectivenessMessage}`,
+        );
+        newLog.push(
+          `${attacker.pokemon.name} entrou em desespero, pois não afetou ${defender.pokemon.name}!`,
+        );
+      } else {
+        newLog.push(
+          `${attacker.pokemon.name} usou ${move.name} e causou ${damage} de dano${shieldMessage}!${effectivenessMessage}`,
+        );
+      }
 
       let updatedAttacker = { ...attacker };
 
@@ -203,9 +212,7 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
       const newHand = updatedAttacker.hand.filter(
         (_, idx) => idx !== moveIndex,
       );
-      const newDiscard = move.temporary
-        ? updatedAttacker.discardPile
-        : [...updatedAttacker.discardPile, move];
+      const newDiscard = [...updatedAttacker.discardPile, move];
       updatedAttacker = {
         ...updatedAttacker,
         hand: newHand,
@@ -266,7 +273,7 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
       let updatedTurnOrder = [...state.turnOrder];
 
       if (nextPhase === "battle" && updatedPlayer) {
-        const refreshedPlayer = drawCardsForUnit(updatedPlayer);
+        const refreshedPlayer = prepareForTurnStart(updatedPlayer);
         updatedPlayer = refreshedPlayer;
         updatedTurnOrder = updatedTurnOrder.map((unit) =>
           isPlayerUnit(unit) && unit.pokemon.id === updatedPlayer!.pokemon.id
@@ -275,7 +282,7 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
         );
       } else if (nextPhase === "enemy_turn" && updatedEnemies.length > 0) {
         const nextEnemy = nextUnit as EnemyPokemon;
-        const refreshedEnemy = drawCardsForUnit(nextEnemy);
+        const refreshedEnemy = prepareForTurnStart(nextEnemy);
         updatedEnemies = updatedEnemies.map((e) =>
           e.pokemon.id === nextEnemy.pokemon.id ? refreshedEnemy : e,
         );
