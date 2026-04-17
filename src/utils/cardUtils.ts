@@ -8,12 +8,24 @@ interface ApiMove {
   pp: number;
   type: { name: string };
   damage_class: { name: string };
+  meta?: {
+    ailment: { name: string } | null;
+    ailment_chance: number;
+  };
+  effect_chance: number | null;
 }
 
 export function calculateEnergyCost(pp: number): 1 | 2 | 3 {
   if (pp >= 30) return 1;
   if (pp > 20) return 2;
   return 3;
+}
+
+function hasSecondaryEffect(moveData: ApiMove): boolean {
+  if (moveData.effect_chance && moveData.effect_chance > 0) return true;
+  if (moveData.meta?.ailment?.name && moveData.meta.ailment.name !== "none")
+    return true;
+  return false;
 }
 
 export async function buildInitialDeck(pokemon: Pokemon): Promise<Card[]> {
@@ -23,16 +35,18 @@ export async function buildInitialDeck(pokemon: Pokemon): Promise<Card[]> {
   for (const moveRef of levelOneMoves) {
     const moveData = (await getMove(moveRef.url)) as ApiMove;
     if (moveData.power !== null && moveData.damage_class.name !== "status") {
-      damageMoves.push({
-        id: String(moveData.id),
-        name: moveData.name.charAt(0).toUpperCase() + moveData.name.slice(1),
-        type: moveData.type.name,
-        power: moveData.power,
-        pp: moveData.pp,
-        energyCost: calculateEnergyCost(moveData.pp),
-        description: "",
-        damageClass: moveData.damage_class.name as "physical" | "special",
-      });
+      if (!hasSecondaryEffect(moveData)) {
+        damageMoves.push({
+          id: String(moveData.id),
+          name: moveData.name.charAt(0).toUpperCase() + moveData.name.slice(1),
+          type: moveData.type.name,
+          power: moveData.power,
+          pp: moveData.pp,
+          energyCost: calculateEnergyCost(moveData.pp),
+          description: "",
+          damageClass: moveData.damage_class.name as "physical" | "special",
+        });
+      }
     }
   }
 

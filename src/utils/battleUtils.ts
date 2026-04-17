@@ -1,4 +1,4 @@
-import type { PlayerPokemon, EnemyPokemon, Card } from "../types";
+import type { PlayerPokemon, EnemyPokemon, Card, Pokemon } from "../types";
 
 const DAMAGE_SCALING_FACTOR = 0.038;
 
@@ -394,10 +394,18 @@ export function calculateDamage(
 }
 
 export function calculateCardDisplayDamage(
-  attacker: PlayerPokemon,
+  attacker: { pokemon: Pokemon; level: number },
   move: Card,
 ): number {
-  return calculateDamage(attacker, move);
+  const level = attacker.level;
+  const power = move.power;
+  const attackStat =
+    move.damageClass === "physical"
+      ? attacker.pokemon.stats.attack
+      : attacker.pokemon.stats.specialAttack;
+
+  const baseDamage = (((2 * level) / 5 + 2) * power * attackStat) / 50 + 2;
+  return Math.floor(baseDamage * DAMAGE_SCALING_FACTOR);
 }
 
 export function calculateXpGain(

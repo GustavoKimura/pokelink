@@ -34,6 +34,7 @@ export default function Game() {
   const location = useLocation();
   const navigate = useNavigate();
   const starterId = location.state?.starterId;
+  const customDeck = location.state?.customDeck as Card[] | undefined;
 
   const [state, dispatch] = useBattleReducer();
   const [loading, setLoading] = useState(true);
@@ -67,7 +68,13 @@ export default function Game() {
 
     const playerApiData = await getPokemon(starterId);
     const playerPokemon = transformApiPokemon(playerApiData);
-    const runDeck = await buildInitialDeck(playerPokemon);
+
+    let runDeck: Card[];
+    if (customDeck) {
+      runDeck = customDeck;
+    } else {
+      runDeck = await buildInitialDeck(playerPokemon);
+    }
     const shuffledDrawPile = shuffleArray([...runDeck]);
     const { drawn: initialHand, newDeck: initialDrawPile } = drawCards(
       shuffledDrawPile,
@@ -98,7 +105,7 @@ export default function Game() {
     setPlayer(player);
     startRun();
     setLoading(false);
-  }, [starterId, navigate, setPlayer, startRun]);
+  }, [starterId, customDeck, navigate, setPlayer, startRun]);
 
   useEffect(() => {
     if (initialized.current) return;

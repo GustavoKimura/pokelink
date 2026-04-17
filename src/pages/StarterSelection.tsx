@@ -10,6 +10,9 @@ import {
   calculateShield,
   calculateCardDisplayDamage,
 } from "../utils/battleUtils";
+import StarterDeckModal from "../components/Modals/StarterDeckModal";
+import { buildInitialDeck } from "../utils/cardUtils";
+import { BookOpen } from "lucide-react";
 
 export default function StarterSelection() {
   const navigate = useNavigate();
@@ -17,6 +20,9 @@ export default function StarterSelection() {
   const [startersData, setStartersData] = useState<Record<number, Pokemon>>({});
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [showDeckModal, setShowDeckModal] = useState(false);
+  const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
+  const [customDecks, setCustomDecks] = useState<Record<number, Card[]>>({});
 
   useEffect(() => {
     const loadStarters = async () => {
@@ -43,10 +49,28 @@ export default function StarterSelection() {
     setSelectedId(id);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (selectedId) {
-      navigate("/game", { state: { starterId: selectedId } });
+      const deck =
+        customDecks[selectedId] ||
+        (await buildInitialDeck(startersData[selectedId]));
+      navigate("/game", { state: { starterId: selectedId, customDeck: deck } });
     }
+  };
+
+  const handleViewDeck = (id: number) => {
+    const pokemon = startersData[id];
+    if (pokemon) {
+      setSelectedPokemon(pokemon);
+      setShowDeckModal(true);
+    }
+  };
+
+  const handleDeckConfirm = (deck: Card[]) => {
+    if (selectedPokemon) {
+      setCustomDecks((prev) => ({ ...prev, [selectedPokemon.id]: deck }));
+    }
+    setShowDeckModal(false);
   };
 
   if (loading) {
@@ -156,12 +180,23 @@ export default function StarterSelection() {
                       {starter.description}
                     </p>
 
-                    <div className="grid grid-cols-2 gap-1 text-xs">
+                    <div className="grid grid-cols-2 gap-1 text-xs mb-3">
                       <div>HP: {maxHp}</div>
                       <div>Ataque: {attackPower}</div>
                       <div>Escudo: {shield}</div>
                       <div>Velocidade: {pokemon.stats.speed}</div>
                     </div>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewDeck(starter.id);
+                      }}
+                      className="w-full py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center justify-center gap-2"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      Ver Baralho Inicial
+                    </button>
                   </>
                 )}
               </div>
@@ -186,6 +221,14 @@ export default function StarterSelection() {
           Confirmar Escolha
         </button>
       </div>
+
+      {showDeckModal && selectedPokemon && (
+        <StarterDeckModal
+          pokemon={selectedPokemon}
+          onConfirm={handleDeckConfirm}
+          onClose={() => setShowDeckModal(false)}
+        />
+      )}
     </div>
   );
 }
