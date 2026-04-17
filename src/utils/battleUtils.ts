@@ -1,6 +1,6 @@
 import type { PlayerPokemon, EnemyPokemon, Card } from "../types";
 
-const DAMAGE_SCALING_FACTOR = 0.06;
+const DAMAGE_SCALING_FACTOR = 0.038;
 
 const attackChart: Record<string, Record<string, number>> = {
   normal: {
@@ -375,7 +375,7 @@ export function calculateShield(
   level: number,
 ): number {
   const maxDefense = Math.max(defense, specialDefense);
-  return Math.floor((maxDefense * level) / 15) + 3;
+  return Math.floor((maxDefense * level) / 18) + 4;
 }
 
 export function calculateDamage(

@@ -205,12 +205,10 @@ export default function Game() {
       );
       updatePlayer(updatedPlayer);
 
-      if (options.length > 0) {
-        setLevelUpOptions(options);
-        setShowLevelUp(true);
-        setRunPhase("map");
-        return;
-      }
+      setLevelUpOptions(options);
+      setShowLevelUp(true);
+      setRunPhase("map");
+      return;
     }
 
     updatePlayer(updatedPlayer);
@@ -234,6 +232,18 @@ export default function Game() {
     };
 
     updatePlayer(updatedPlayer);
+    completeNode(runState.currentNodeId!);
+
+    setShowLevelUp(false);
+    setLevelUpOptions([]);
+    setCurrentNode(null);
+    setRunPhase("map");
+  };
+
+  const handleLevelUpSkip = () => {
+    if (!runState.player) return;
+
+    updatePlayer(runState.player);
     completeNode(runState.currentNodeId!);
 
     setShowLevelUp(false);
@@ -297,6 +307,7 @@ export default function Game() {
           player={runState.player}
           options={levelUpOptions}
           onSelect={handleLevelUpSelect}
+          onSkip={handleLevelUpSkip}
         />
       )}
       {showVictory && <VictoryModal xpEarned={150} />}
