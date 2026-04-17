@@ -1,3 +1,5 @@
+import type { MapNode } from "./map";
+
 export interface Pokemon {
   id: number;
   name: string;
@@ -58,6 +60,7 @@ export interface PlayerPokemon {
   energy: number;
   revives: number;
   runXp: number;
+  xpToNextLevel: number;
 }
 
 export interface EnemyPokemon {
@@ -89,4 +92,11 @@ export interface BattleState {
   log: string[];
   selectedMove: Card | null;
   selectingTarget: boolean;
+}
+
+export interface GameRunState {
+  mapNodes: MapNode[];
+  currentNodeId: string | null;
+  player: PlayerPokemon | null;
+  runPhase: "map" | "battle" | "rest" | "boss" | "victory" | "defeat";
 }

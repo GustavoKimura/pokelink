@@ -1,12 +1,14 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback, useRef } from "react";
-import type { PlayerPokemon, EnemyPokemon, Card } from "../types";
+import type { PlayerPokemon, EnemyPokemon } from "../types";
 import { getPokemon } from "../services/pokeCache";
 import { transformApiPokemon } from "../utils/pokemonTransform";
 import { buildInitialDeck, drawCards } from "../utils/cardUtils";
 import { calculateMaxHp, calculateShield } from "../utils/battleUtils";
 import { useBattleReducer } from "../hooks/useBattleReducer";
+import { useGameStore } from "../store/gameStore";
 import BattleScreen from "../components/Battle/BattleScreen";
+import MapScreen from "../components/Map/MapScreen";
 
 export default function Game() {
   const location = useLocation();
@@ -16,6 +18,8 @@ export default function Game() {
   const [state, dispatch] = useBattleReducer();
   const [loading, setLoading] = useState(true);
   const initialized = useRef(false);
+
+  const { runState, setPlayer, startRun, setCurrentNode } = useGameStore();
 
   const initGame = useCallback(async () => {
     if (!starterId) {
@@ -45,9 +49,26 @@ export default function Game() {
       energy: 3,
       revives: 1,
       runXp: 0,
+      xpToNextLevel: Math.floor((4 * 1 ** 3) / 5),
     };
 
-    const enemyApiData = await getPokemon(133);
+    setPlayer(player);
+    startRun();
+    setLoading(false);
+  }, [starterId, navigate, setPlayer, startRun]);
+
+  useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+    initGame();
+  }, [initGame]);
+
+  const handleStartBattle = async (nodeId: string) => {
+    const node = runState.mapNodes.find((n) => n.id === nodeId);
+    if (!node || !runState.player) return;
+
+    setLoading(true);
+    const enemyApiData = await getPokemon(node.pokemonId!);
     const enemyPokemon = transformApiPokemon(enemyApiData);
     const enemyDeck = await buildInitialDeck(enemyPokemon);
     const shuffledEnemyDeck = [...enemyDeck].sort(() => Math.random() - 0.5);
@@ -59,13 +80,13 @@ export default function Game() {
 
     const enemy: EnemyPokemon = {
       pokemon: enemyPokemon,
-      level: 2,
-      currentHp: calculateMaxHp(enemyPokemon.stats.hp, 2),
-      maxHp: calculateMaxHp(enemyPokemon.stats.hp, 2),
+      level: node.level,
+      currentHp: calculateMaxHp(enemyPokemon.stats.hp, node.level),
+      maxHp: calculateMaxHp(enemyPokemon.stats.hp, node.level),
       shield: calculateShield(
         enemyPokemon.stats.defense,
         enemyPokemon.stats.specialDefense,
-        2,
+        node.level,
       ),
       deck: enemyNewDeck,
       hand: enemyHand,
@@ -73,53 +94,43 @@ export default function Game() {
       energy: 3,
     };
 
-    dispatch({ type: "INIT_BATTLE", player, enemy });
+    dispatch({ type: "INIT_BATTLE", player: runState.player, enemy });
     setLoading(false);
-  }, [starterId, navigate, dispatch]);
-
-  useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
-    initGame();
-  }, [initGame]);
-
-  const handleSelectMove = (move: Card) => {
-    if (state.phase !== "battle") return;
-    dispatch({ type: "SELECT_MOVE", move });
-  };
-
-  const handleSelectTarget = (targetId: string) => {
-    dispatch({ type: "SELECT_TARGET", targetId });
-  };
-
-  const handleCancelTarget = () => {
-    dispatch({ type: "CANCEL_TARGET" });
-  };
-
-  const handleEndTurn = () => {
-    dispatch({ type: "END_TURN" });
-  };
-
-  const handleEnemyTurn = () => {
-    dispatch({ type: "ENEMY_TURN" });
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div className="text-xl">Iniciando batalha...</div>
+        <div className="text-xl">Carregando...</div>
       </div>
+    );
+  }
+
+  if (runState.runPhase === "map") {
+    return (
+      <MapScreen
+        nodes={runState.mapNodes}
+        currentNodeId={runState.currentNodeId}
+        onNodeSelect={setCurrentNode}
+        onProceed={() => {
+          if (runState.currentNodeId) {
+            handleStartBattle(runState.currentNodeId);
+          }
+        }}
+      />
     );
   }
 
   return (
     <BattleScreen
       state={state}
-      onSelectMove={handleSelectMove}
-      onSelectTarget={handleSelectTarget}
-      onCancelTarget={handleCancelTarget}
-      onEndTurn={handleEndTurn}
-      onEnemyTurn={handleEnemyTurn}
+      onSelectMove={(move) => dispatch({ type: "SELECT_MOVE", move })}
+      onSelectTarget={(targetId) =>
+        dispatch({ type: "SELECT_TARGET", targetId })
+      }
+      onCancelTarget={() => dispatch({ type: "CANCEL_TARGET" })}
+      onEndTurn={() => dispatch({ type: "END_TURN" })}
+      onEnemyTurn={() => dispatch({ type: "ENEMY_TURN" })}
     />
   );
 }
