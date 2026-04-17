@@ -1,4 +1,5 @@
 const CACHE_PREFIX = "poke_";
+const MAX_CACHE_ITEMS = 50;
 
 interface Pokemon {
   id: number;
@@ -56,6 +57,27 @@ interface EvolutionChain {
   };
 }
 
+function getCacheKeys(): string[] {
+  return Object.keys(localStorage).filter((key) =>
+    key.startsWith(CACHE_PREFIX),
+  );
+}
+
+function cleanOldestCache() {
+  const keys = getCacheKeys();
+  if (keys.length <= MAX_CACHE_ITEMS) return;
+  const sorted = keys.sort((a, b) => {
+    const timeA = localStorage.getItem(a + "_time") || "0";
+    const timeB = localStorage.getItem(b + "_time") || "0";
+    return parseInt(timeA) - parseInt(timeB);
+  });
+  const toRemove = sorted.slice(0, keys.length - MAX_CACHE_ITEMS);
+  toRemove.forEach((key) => {
+    localStorage.removeItem(key);
+    localStorage.removeItem(key + "_time");
+  });
+}
+
 async function fetchAndCache<T>(url: string, key: string): Promise<T> {
   const cached = localStorage.getItem(key);
   if (cached) {
@@ -66,7 +88,20 @@ async function fetchAndCache<T>(url: string, key: string): Promise<T> {
     throw new Error(`Failed to fetch ${url}`);
   }
   const data = await response.json();
-  localStorage.setItem(key, JSON.stringify(data));
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    localStorage.setItem(key + "_time", Date.now().toString());
+    cleanOldestCache();
+  } catch {
+    console.warn("Storage quota exceeded, cleaning cache...");
+    cleanOldestCache();
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+      localStorage.setItem(key + "_time", Date.now().toString());
+    } catch {
+      console.error("Still cannot store data, proceeding without cache");
+    }
+  }
   return data;
 }
 

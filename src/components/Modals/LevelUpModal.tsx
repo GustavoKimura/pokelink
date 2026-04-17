@@ -4,6 +4,7 @@ import {
   calculateMaxHp,
   calculateShield,
 } from "../../utils/battleUtils";
+import { translateType } from "../../utils/pokemonTransform";
 
 interface LevelUpModalProps {
   player: PlayerPokemon;
@@ -41,6 +42,12 @@ const typeColors: Record<string, string> = {
   typeless: "bg-[#6B6B6B]",
 };
 
+const damageIconMap: Record<string, string> = {
+  physical: "👊",
+  special: "✨",
+  status: "🔮",
+};
+
 export default function LevelUpModal({
   player,
   previousStats,
@@ -67,6 +74,11 @@ export default function LevelUpModal({
   };
   const newAttackPower = calculateCardDisplayDamage(player, sampleMove);
 
+  const hpChanged = newMaxHp !== previousStats.maxHp;
+  const attackChanged = newAttackPower !== previousStats.attackPower;
+  const shieldChanged = newShield !== previousStats.shield;
+  const speedChanged = player.pokemon.stats.speed !== previousStats.speed;
+
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 overflow-y-auto py-8">
       <div className="bg-gray-800 p-6 rounded-xl max-w-4xl w-full mx-4">
@@ -77,27 +89,53 @@ export default function LevelUpModal({
 
         <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-gray-700/50 rounded-lg">
           <div>
-            <h3 className="text-lg font-semibold text-yellow-300 mb-2">
-              Status
-            </h3>
-            <div className="space-y-1 text-sm">
+            <h3 className="text-lg font-semibold text-white mb-2">Status</h3>
+            <div className="space-y-1 text-sm text-white">
               <p>
-                HP: {previousStats.maxHp} →{" "}
-                <span className="text-green-400">{newMaxHp}</span>
+                HP:{" "}
+                {hpChanged ? (
+                  <>
+                    {previousStats.maxHp} →{" "}
+                    <span className="text-green-400">{newMaxHp}</span>
+                  </>
+                ) : (
+                  newMaxHp
+                )}
               </p>
               <p>
-                Ataque: {previousStats.attackPower} →{" "}
-                <span className="text-green-400">{newAttackPower}</span>
+                Ataque:{" "}
+                {attackChanged ? (
+                  <>
+                    {previousStats.attackPower} →{" "}
+                    <span className="text-green-400">{newAttackPower}</span>
+                  </>
+                ) : (
+                  newAttackPower
+                )}
               </p>
               <p>
-                Escudo: {previousStats.shield} →{" "}
-                <span className="text-green-400">{newShield}</span>
+                Escudo:{" "}
+                {shieldChanged ? (
+                  <>
+                    {previousStats.shield} →{" "}
+                    <span className="text-green-400">{newShield}</span>
+                  </>
+                ) : (
+                  newShield
+                )}
               </p>
               <p>
-                Velocidade: {previousStats.speed} →{" "}
-                <span className="text-green-400">
-                  {player.pokemon.stats.speed}
-                </span>
+                Velocidade:{" "}
+                {speedChanged ? (
+                  <>
+                    {previousStats.speed} →{" "}
+                    <span className="text-green-400">
+                      {player.pokemon.stats.speed}
+                    </span>
+                  </>
+                ) : (
+                  player.pokemon.stats.speed
+                )}
               </p>
             </div>
           </div>
@@ -110,7 +148,9 @@ export default function LevelUpModal({
           </div>
         </div>
 
-        <h3 className="text-xl font-semibold mb-3">Escolha uma nova carta</h3>
+        <h3 className="text-xl font-semibold text-white mb-3">
+          Escolha uma nova carta
+        </h3>
 
         {options.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -119,7 +159,8 @@ export default function LevelUpModal({
                 ? typeColors.typeless
                 : typeColors[card.type] || "bg-gray-500";
               const displayDamage = calculateCardDisplayDamage(player, card);
-              const damageIcon = card.damageClass === "physical" ? "👊" : "✨";
+              const damageIcon = damageIconMap[card.damageClass] || "👊";
+              const translatedType = translateType(card.type);
 
               return (
                 <button
@@ -135,9 +176,8 @@ export default function LevelUpModal({
                   </p>
                   <p className="text-sm mb-1">⚡ {card.energyCost}</p>
                   <p className="text-xs uppercase">
-                    {card.typeless ? "Sem Tipo" : card.type}
+                    {card.typeless ? "Sem Tipo" : translatedType}
                   </p>
-                  <p className="text-xs mt-2 opacity-80">{card.damageClass}</p>
                 </button>
               );
             })}
@@ -151,7 +191,7 @@ export default function LevelUpModal({
         <div className="flex justify-center gap-4 mt-6">
           <button
             onClick={onSkip}
-            className="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg font-semibold"
+            className="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg font-semibold text-white"
           >
             Pular
           </button>

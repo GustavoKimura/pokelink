@@ -216,13 +216,18 @@ export default function Game() {
         updatedPlayer,
         sampleMove,
       );
+      const oldMaxShield = calculateShield(
+        updatedPlayer.pokemon.stats.defense,
+        updatedPlayer.pokemon.stats.specialDefense,
+        updatedPlayer.level,
+      );
 
       const oldStats: PreviousStats = {
         level: updatedPlayer.level,
         maxHp: updatedPlayer.maxHp,
         attackPower: oldAttackPower,
         speed: updatedPlayer.pokemon.stats.speed,
-        shield: updatedPlayer.shield,
+        shield: oldMaxShield,
       };
       setPreviousStats(oldStats);
 
