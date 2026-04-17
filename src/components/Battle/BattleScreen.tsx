@@ -152,7 +152,7 @@ export default function BattleScreen({
       )}
 
       <div className="bg-gray-800/95 p-4 border-t border-gray-700">
-        <div className="max-w-4xl mx-auto flex flex-col items-center">
+        <div className="w-full">
           <CardHand
             player={player}
             cards={player.hand}
@@ -162,10 +162,10 @@ export default function BattleScreen({
           />
 
           {isPlayerTurn && (
-            <div className="flex justify-center mt-4">
+            <div className="flex justify-center mt-2">
               <button
                 onClick={onEndTurn}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold"
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold shadow-lg"
               >
                 Passar Turno
               </button>

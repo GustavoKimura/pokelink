@@ -58,9 +58,7 @@ export function transformApiPokemon(apiData: ApiPokemon): Pokemon {
   return {
     id: apiData.id,
     name: apiData.name.charAt(0).toUpperCase() + apiData.name.slice(1),
-    types: apiData.types.map(
-      (t) => typeTranslation[t.type.name] || t.type.name,
-    ),
+    types: apiData.types.map((t) => t.type.name),
     sprites: {
       front: apiData.sprites.front_default || "",
       back: apiData.sprites.back_default || "",
@@ -93,4 +91,8 @@ export function transformApiPokemon(apiData: ApiPokemon): Pokemon {
           )?.level_learned_at || 0,
       })),
   };
+}
+
+export function translateType(type: string): string {
+  return typeTranslation[type] || type;
 }

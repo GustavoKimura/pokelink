@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { PlayerPokemon, EnemyPokemon } from "../../types";
 import DiscardPileModal from "./DiscardPileModal";
+import { translateType } from "../../utils/pokemonTransform";
 
 interface PokemonStatusProps {
   pokemon: PlayerPokemon | EnemyPokemon;
@@ -8,24 +9,24 @@ interface PokemonStatusProps {
 }
 
 const typeColors: Record<string, string> = {
-  Normal: "bg-[#A8A878]",
-  Fogo: "bg-[#F08030]",
-  Água: "bg-[#6890F0]",
-  Elétrico: "bg-[#F8D030]",
-  Planta: "bg-[#78C850]",
-  Gelo: "bg-[#98D8D8]",
-  Lutador: "bg-[#C03028]",
-  Venenoso: "bg-[#A040A0]",
-  Terra: "bg-[#E0C068]",
-  Voador: "bg-[#A890F0]",
-  Psíquico: "bg-[#F85888]",
-  Inseto: "bg-[#A8B820]",
-  Pedra: "bg-[#B8A038]",
-  Fantasma: "bg-[#705898]",
-  Dragão: "bg-[#7038F8]",
-  Sombrio: "bg-[#705848]",
-  Aço: "bg-[#B8B8D0]",
-  Fada: "bg-[#E29DE5]",
+  normal: "bg-[#A8A878]",
+  fire: "bg-[#F08030]",
+  water: "bg-[#6890F0]",
+  electric: "bg-[#F8D030]",
+  grass: "bg-[#78C850]",
+  ice: "bg-[#98D8D8]",
+  fighting: "bg-[#C03028]",
+  poison: "bg-[#A040A0]",
+  ground: "bg-[#E0C068]",
+  flying: "bg-[#A890F0]",
+  psychic: "bg-[#F85888]",
+  bug: "bg-[#A8B820]",
+  rock: "bg-[#B8A038]",
+  ghost: "bg-[#705898]",
+  dragon: "bg-[#7038F8]",
+  dark: "bg-[#705848]",
+  steel: "bg-[#B8B8D0]",
+  fairy: "bg-[#E29DE5]",
 };
 
 export default function PokemonStatus({
@@ -91,7 +92,7 @@ export default function PokemonStatus({
                 key={type}
                 className={`text-xs px-2 py-0.5 rounded-full ${typeColors[type] || "bg-gray-700"}`}
               >
-                {type}
+                {translateType(type)}
               </span>
             ))}
           </div>
