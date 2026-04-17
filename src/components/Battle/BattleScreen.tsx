@@ -11,6 +11,7 @@ interface BattleScreenProps {
   onCancelTarget: () => void;
   onEndTurn: () => void;
   onEnemyTurn: () => void;
+  onBattleEnd: (victory: boolean) => void;
 }
 
 export default function BattleScreen({
@@ -20,10 +21,26 @@ export default function BattleScreen({
   onCancelTarget,
   onEndTurn,
   onEnemyTurn,
+  onBattleEnd,
 }: BattleScreenProps) {
   const { player, enemies, phase, selectingTarget, log, currentTurnIndex } =
     state;
   const enemyTurnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!player || enemies.length === 0) return;
+
+    if (player.currentHp <= 0) {
+      onBattleEnd(false);
+      return;
+    }
+
+    const allEnemiesDefeated = enemies.every((e) => e.currentHp <= 0);
+    if (allEnemiesDefeated) {
+      onBattleEnd(true);
+      return;
+    }
+  }, [player, enemies, onBattleEnd]);
 
   const processEnemyTurn = useCallback(() => {
     const currentEnemy = state.turnOrder[currentTurnIndex] as
