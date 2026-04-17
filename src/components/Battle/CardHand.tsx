@@ -51,7 +51,11 @@ export default function CardHand({
           return (
             <button
               key={`${card.id}-${index}`}
-              onClick={() => canPlay && canAfford && onSelectCard(card)}
+              onClick={() => {
+                if (canPlay && canAfford) {
+                  onSelectCard(card);
+                }
+              }}
               disabled={!canPlay || !canAfford}
               className={`
                 ${bgColor} text-white rounded-lg p-3 min-w-30 text-left

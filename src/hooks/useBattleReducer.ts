@@ -97,6 +97,7 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 
     case "END_TURN": {
       if (!state.player) return state;
+
       const newDiscard = [...state.player.discardPile, ...state.player.hand];
       const {
         drawn: newHand,
@@ -112,13 +113,14 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
       };
 
       const nextIndex = (state.currentTurnIndex + 1) % state.turnOrder.length;
+      const nextUnit = state.turnOrder[nextIndex];
+      const nextPhase = nextUnit === updatedPlayer ? "battle" : "enemy_turn";
 
       return {
         ...state,
         player: updatedPlayer,
         currentTurnIndex: nextIndex,
-        phase:
-          state.turnOrder[nextIndex] === state.player ? "battle" : "enemy_turn",
+        phase: nextPhase,
       };
     }
 
