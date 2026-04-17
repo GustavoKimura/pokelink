@@ -38,6 +38,26 @@ interface Move {
   damage_class: { name: string };
 }
 
+interface PokemonSpecies {
+  evolution_chain: {
+    url: string;
+  };
+}
+
+interface EvolutionChain {
+  chain: EvolutionNode;
+}
+
+interface EvolutionNode {
+  species: {
+    name: string;
+  };
+  evolves_to: EvolutionNode[];
+  evolution_details: {
+    min_level: number | null;
+  }[];
+}
+
 async function fetchAndCache<T>(url: string, key: string): Promise<T> {
   const cached = localStorage.getItem(key);
   if (cached) {
@@ -67,6 +87,20 @@ export async function getMove(urlOrId: string | number): Promise<Move> {
   }
   const key = `${CACHE_PREFIX}move_${id}`;
   return fetchAndCache<Move>(`https://pokeapi.co/api/v2/move/${id}`, key);
+}
+
+export async function getPokemonSpecies(id: number): Promise<PokemonSpecies> {
+  const key = `${CACHE_PREFIX}pokemon-species_${id}`;
+  return fetchAndCache<PokemonSpecies>(
+    `https://pokeapi.co/api/v2/pokemon-species/${id}`,
+    key,
+  );
+}
+
+export async function getEvolutionChain(url: string): Promise<EvolutionChain> {
+  const id = url.split("/").slice(-2, -1)[0];
+  const key = `${CACHE_PREFIX}evolution-chain_${id}`;
+  return fetchAndCache<EvolutionChain>(url, key);
 }
 
 export function getAnimatedSpriteUrl(

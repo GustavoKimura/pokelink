@@ -1,6 +1,12 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback, useRef } from "react";
-import type { PlayerPokemon, EnemyPokemon, Card } from "../types";
+import type {
+  PlayerPokemon,
+  EnemyPokemon,
+  Card,
+  Pokemon,
+  PreviousStats,
+} from "../types";
 import { getPokemon } from "../services/pokeCache";
 import { transformApiPokemon } from "../utils/pokemonTransform";
 import { buildInitialDeck, drawCards, shuffleArray } from "../utils/cardUtils";
@@ -12,6 +18,7 @@ import {
   getXpForNextLevel,
 } from "../utils/battleUtils";
 import { getLevelUpMoveOptions } from "../utils/levelUpUtils";
+import { checkEvolution } from "../utils/evolutionUtils";
 import { useBattleReducer } from "../hooks/useBattleReducer";
 import { useGameStore } from "../store/gameStore";
 import BattleScreen from "../components/Battle/BattleScreen";
@@ -20,6 +27,7 @@ import LevelUpModal from "../components/Modals/LevelUpModal";
 import VictoryModal from "../components/Modals/VictoryModal";
 import GameOverModal from "../components/Modals/GameOverModal";
 import RestModal from "../components/Modals/RestModal";
+import EvolutionModal from "../components/Modals/EvolutionModal";
 
 export default function Game() {
   const location = useLocation();
@@ -33,6 +41,11 @@ export default function Game() {
   const [showVictory, setShowVictory] = useState(false);
   const [showRest, setShowRest] = useState(false);
   const [healAmount, setHealAmount] = useState(0);
+  const [showEvolution, setShowEvolution] = useState(false);
+  const [evolvedPokemon, setEvolvedPokemon] = useState<Pokemon | null>(null);
+  const [previousStats, setPreviousStats] = useState<PreviousStats | null>(
+    null,
+  );
   const initialized = useRef(false);
 
   const {
@@ -188,6 +201,18 @@ export default function Game() {
       updatedPlayer.level,
     );
     if (levelUpResult) {
+      const oldStats = {
+        level: updatedPlayer.level,
+        maxHp: updatedPlayer.maxHp,
+        attack: updatedPlayer.pokemon.stats.attack,
+        specialAttack: updatedPlayer.pokemon.stats.specialAttack,
+        defense: updatedPlayer.pokemon.stats.defense,
+        specialDefense: updatedPlayer.pokemon.stats.specialDefense,
+        speed: updatedPlayer.pokemon.stats.speed,
+        shield: updatedPlayer.shield,
+      };
+      setPreviousStats(oldStats);
+
       updatedPlayer.level = levelUpResult.newLevel;
       updatedPlayer.runXp = levelUpResult.remainingXp;
       const newMaxHp = calculateMaxHp(
@@ -198,6 +223,29 @@ export default function Game() {
       updatedPlayer.maxHp = newMaxHp;
       updatedPlayer.currentHp = Math.max(1, Math.floor(newMaxHp * hpRatio));
       updatedPlayer.xpToNextLevel = getXpForNextLevel(updatedPlayer.level);
+
+      const evolution = await checkEvolution(
+        updatedPlayer.pokemon,
+        updatedPlayer.level,
+      );
+      if (evolution) {
+        updatedPlayer.pokemon = evolution;
+        updatedPlayer.maxHp = calculateMaxHp(
+          evolution.stats.hp,
+          updatedPlayer.level,
+        );
+        updatedPlayer.currentHp = updatedPlayer.maxHp;
+        updatedPlayer.shield = calculateShield(
+          evolution.stats.defense,
+          evolution.stats.specialDefense,
+          updatedPlayer.level,
+        );
+        setEvolvedPokemon(evolution);
+        setShowEvolution(true);
+        updatePlayer(updatedPlayer);
+        completeNode(runState.currentNodeId!);
+        return;
+      }
 
       const options = await getLevelUpMoveOptions(
         updatedPlayer.pokemon,
@@ -258,6 +306,13 @@ export default function Game() {
     setRunPhase("map");
   };
 
+  const handleEvolutionConfirm = () => {
+    setShowEvolution(false);
+    setEvolvedPokemon(null);
+    setCurrentNode(null);
+    setRunPhase("map");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
@@ -302,15 +357,23 @@ export default function Game() {
       {showRest && (
         <RestModal onContinue={handleRestContinue} healAmount={healAmount} />
       )}
-      {showLevelUp && runState.player && (
+      {showLevelUp && runState.player && previousStats && (
         <LevelUpModal
           player={runState.player}
+          previousStats={previousStats}
           options={levelUpOptions}
           onSelect={handleLevelUpSelect}
           onSkip={handleLevelUpSkip}
         />
       )}
       {showVictory && <VictoryModal xpEarned={150} />}
+      {showEvolution && evolvedPokemon && runState.player && (
+        <EvolutionModal
+          oldPokemon={runState.player.pokemon}
+          newPokemon={evolvedPokemon}
+          onConfirm={handleEvolutionConfirm}
+        />
+      )}
     </>
   );
 }

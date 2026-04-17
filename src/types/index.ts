@@ -104,3 +104,14 @@ export interface GameRunState {
   player: PlayerPokemon | null;
   runPhase: "map" | "battle" | "rest" | "boss" | "victory" | "defeat";
 }
+
+export interface PreviousStats {
+  level: number;
+  maxHp: number;
+  attack: number;
+  specialAttack: number;
+  defense: number;
+  specialDefense: number;
+  speed: number;
+  shield: number;
+}

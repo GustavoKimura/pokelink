@@ -1,8 +1,22 @@
 import type { Card, PlayerPokemon } from "../../types";
-import { calculateCardDisplayDamage } from "../../utils/battleUtils";
+import {
+  calculateCardDisplayDamage,
+  calculateMaxHp,
+  calculateShield,
+} from "../../utils/battleUtils";
 
 interface LevelUpModalProps {
   player: PlayerPokemon;
+  previousStats: {
+    level: number;
+    maxHp: number;
+    attack: number;
+    specialAttack: number;
+    defense: number;
+    specialDefense: number;
+    speed: number;
+    shield: number;
+  };
   options: Card[];
   onSelect: (card: Card) => void;
   onSkip: () => void;
@@ -32,19 +46,82 @@ const typeColors: Record<string, string> = {
 
 export default function LevelUpModal({
   player,
+  previousStats,
   options,
   onSelect,
   onSkip,
 }: LevelUpModalProps) {
+  const newMaxHp = calculateMaxHp(player.pokemon.stats.hp, player.level);
+  const newShield = calculateShield(
+    player.pokemon.stats.defense,
+    player.pokemon.stats.specialDefense,
+    player.level,
+  );
+
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 overflow-y-auto py-8">
       <div className="bg-gray-800 p-6 rounded-xl max-w-4xl w-full mx-4">
-        <h2 className="text-2xl font-bold text-yellow-400 mb-4">
-          Level Up! Escolha uma nova carta
-        </h2>
-        <p className="text-gray-300 mb-6">
+        <h2 className="text-3xl font-bold text-yellow-400 mb-2">Level Up!</h2>
+        <p className="text-xl text-white mb-4">
           Seu Pokémon subiu para o nível {player.level}!
         </p>
+
+        <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-gray-700/50 rounded-lg">
+          <div>
+            <h3 className="text-lg font-semibold text-yellow-300 mb-2">
+              Status
+            </h3>
+            <div className="space-y-1 text-sm">
+              <p>
+                HP: {previousStats.maxHp} →{" "}
+                <span className="text-green-400">{newMaxHp}</span>
+              </p>
+              <p>
+                Ataque: {previousStats.attack} →{" "}
+                <span className="text-green-400">
+                  {player.pokemon.stats.attack}
+                </span>
+              </p>
+              <p>
+                Ataque Especial: {previousStats.specialAttack} →{" "}
+                <span className="text-green-400">
+                  {player.pokemon.stats.specialAttack}
+                </span>
+              </p>
+              <p>
+                Defesa: {previousStats.defense} →{" "}
+                <span className="text-green-400">
+                  {player.pokemon.stats.defense}
+                </span>
+              </p>
+              <p>
+                Defesa Especial: {previousStats.specialDefense} →{" "}
+                <span className="text-green-400">
+                  {player.pokemon.stats.specialDefense}
+                </span>
+              </p>
+              <p>
+                Velocidade: {previousStats.speed} →{" "}
+                <span className="text-green-400">
+                  {player.pokemon.stats.speed}
+                </span>
+              </p>
+              <p>
+                Escudo: {previousStats.shield} →{" "}
+                <span className="text-green-400">{newShield}</span>
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center justify-center">
+            <img
+              src={player.pokemon.sprites.animated.front}
+              alt={player.pokemon.name}
+              className="w-32 h-32"
+            />
+          </div>
+        </div>
+
+        <h3 className="text-xl font-semibold mb-3">Escolha uma nova carta</h3>
 
         {options.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -61,9 +138,9 @@ export default function LevelUpModal({
                   onClick={() => onSelect(card)}
                   className={`${bgColor} text-white rounded-lg p-4 text-left hover:scale-105 transition-transform`}
                 >
-                  <h3 className="font-bold text-lg capitalize mb-2">
+                  <h4 className="font-bold text-lg capitalize mb-2">
                     {card.name}
-                  </h3>
+                  </h4>
                   <p className="text-sm mb-1">
                     {damageIcon} {displayDamage}
                   </p>
@@ -77,7 +154,7 @@ export default function LevelUpModal({
             })}
           </div>
         ) : (
-          <p className="text-gray-400 text-center py-8">
+          <p className="text-gray-400 text-center py-4">
             Nenhuma carta disponível para aprender.
           </p>
         )}

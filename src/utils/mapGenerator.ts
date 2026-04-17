@@ -1,12 +1,15 @@
 import { v4 as uuidv4 } from "uuid";
 import type { MapNode } from "../types/map";
 
-const COMMON_POKEMON_IDS = [19, 16, 10, 13, 133, 92, 246]; // Rattata, Pidgey, Caterpie, Weedle, Eevee, Gastly, Larvitar
+const WILD_POKEMON_IDS = [
+  10, 13, 16, 19, 21, 23, 25, 27, 29, 32, 35, 37, 39, 41, 43, 46, 48, 50, 52,
+  54,
+];
 const BOSS_ID = 6;
 
 export function generateMap(): MapNode[] {
   const nodes: MapNode[] = [];
-  const rows = 5;
+  const rows = 10;
   const cols = 4;
 
   for (let row = 0; row < rows; row++) {
@@ -24,16 +27,14 @@ export function generateMap(): MapNode[] {
       } else if (isBottomRow) {
         type = "battle";
         pokemonId =
-          COMMON_POKEMON_IDS[
-            Math.floor(Math.random() * COMMON_POKEMON_IDS.length)
-          ];
+          WILD_POKEMON_IDS[Math.floor(Math.random() * WILD_POKEMON_IDS.length)];
       } else {
         const rand = Math.random();
         type = rand < 0.7 ? "battle" : "rest";
         if (type === "battle") {
           pokemonId =
-            COMMON_POKEMON_IDS[
-              Math.floor(Math.random() * COMMON_POKEMON_IDS.length)
+            WILD_POKEMON_IDS[
+              Math.floor(Math.random() * WILD_POKEMON_IDS.length)
             ];
         }
       }
