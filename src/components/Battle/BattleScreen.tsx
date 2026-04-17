@@ -28,7 +28,8 @@ export default function BattleScreen({
   const { player, enemies, phase, selectingTarget, log, currentTurnIndex } =
     state;
   const enemyTurnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [showDeckViewer, setShowDeckViewer] = useState(false);
+  const [showPlayerDeck, setShowPlayerDeck] = useState(false);
+  const [showEnemyDeck, setShowEnemyDeck] = useState(false);
 
   useEffect(() => {
     if (!player || enemies.length === 0) return;
@@ -95,6 +96,13 @@ export default function BattleScreen({
       <div className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-md flex justify-center mb-8 relative">
           <PokemonStatus pokemon={currentEnemy} isPlayer={false} />
+          <button
+            onClick={() => setShowEnemyDeck(true)}
+            className="absolute top-0 right-0 p-1 bg-gray-700 rounded hover:bg-gray-600"
+            title="Ver baralho do inimigo"
+          >
+            <BookOpen className="w-4 h-4" />
+          </button>
         </div>
 
         <div className="w-full max-w-2xl bg-gray-800 rounded-lg p-4 mb-8 h-32 overflow-y-auto">
@@ -103,17 +111,14 @@ export default function BattleScreen({
 
         <div className="w-full max-w-md flex justify-center relative">
           <PokemonStatus pokemon={player} isPlayer />
+          <button
+            onClick={() => setShowPlayerDeck(true)}
+            className="absolute top-0 right-0 p-1 bg-gray-700 rounded hover:bg-gray-600"
+            title="Ver seu baralho"
+          >
+            <BookOpen className="w-4 h-4" />
+          </button>
         </div>
-      </div>
-
-      <div className="absolute top-4 right-4 z-10">
-        <button
-          onClick={() => setShowDeckViewer(true)}
-          className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700"
-          title="Ver Baralho"
-        >
-          <BookOpen className="w-6 h-6" />
-        </button>
       </div>
 
       {selectingTarget && (
@@ -169,12 +174,25 @@ export default function BattleScreen({
         </div>
       </div>
 
-      {showDeckViewer && (
+      {showPlayerDeck && (
         <DeckViewerModal
-          deck={player.deck}
-          hand={player.hand}
-          discardPile={player.discardPile}
-          onClose={() => setShowDeckViewer(false)}
+          title="Seu Baralho"
+          runDeck={player.deck}
+          currentDeckCount={player.deck.length}
+          currentDiscardPile={player.discardPile}
+          handCount={player.hand.length}
+          onClose={() => setShowPlayerDeck(false)}
+        />
+      )}
+
+      {showEnemyDeck && (
+        <DeckViewerModal
+          title={`Baralho de ${currentEnemy.pokemon.name}`}
+          runDeck={currentEnemy.deck}
+          currentDeckCount={currentEnemy.deck.length}
+          currentDiscardPile={currentEnemy.discardPile}
+          handCount={currentEnemy.hand.length}
+          onClose={() => setShowEnemyDeck(false)}
         />
       )}
     </div>

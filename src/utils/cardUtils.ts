@@ -68,12 +68,9 @@ export function drawCards(
 
   for (let i = 0; i < count; i++) {
     if (currentDeck.length === 0) {
-      if (currentDiscard.length > 0) {
-        currentDeck = shuffleArray(currentDiscard);
-        currentDiscard = [];
-      } else {
-        break;
-      }
+      if (currentDiscard.length === 0) break;
+      currentDeck = shuffleArray(currentDiscard);
+      currentDiscard = [];
     }
     const card = currentDeck.pop();
     if (card) drawn.push(card);
