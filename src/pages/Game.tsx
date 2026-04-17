@@ -4,7 +4,7 @@ import type { PlayerPokemon, EnemyPokemon, Card } from "../types";
 import { getPokemon } from "../services/pokeCache";
 import { transformApiPokemon } from "../utils/pokemonTransform";
 import { buildInitialDeck, drawCards } from "../utils/cardUtils";
-import { calculateMaxHp } from "../utils/battleUtils";
+import { calculateMaxHp, calculateShield } from "../utils/battleUtils";
 import { useBattleReducer } from "../hooks/useBattleReducer";
 import BattleScreen from "../components/Battle/BattleScreen";
 
@@ -23,7 +23,6 @@ export default function Game() {
       return;
     }
 
-    console.log("Game init started");
     const playerApiData = await getPokemon(starterId);
     const playerPokemon = transformApiPokemon(playerApiData);
     const initialDeck = await buildInitialDeck(playerPokemon);
@@ -35,6 +34,7 @@ export default function Game() {
       level: 1,
       currentHp: calculateMaxHp(playerPokemon.stats.hp, 1),
       maxHp: calculateMaxHp(playerPokemon.stats.hp, 1),
+      shield: calculateShield(playerPokemon.stats.defense, 1),
       deck: newDeck,
       hand: initialHand,
       discardPile: [],
@@ -58,13 +58,13 @@ export default function Game() {
       level: 2,
       currentHp: calculateMaxHp(enemyPokemon.stats.hp, 2),
       maxHp: calculateMaxHp(enemyPokemon.stats.hp, 2),
+      shield: calculateShield(enemyPokemon.stats.defense, 2),
       deck: enemyNewDeck,
       hand: enemyHand,
       discardPile: [],
       energy: 3,
     };
 
-    console.log("Dispatching INIT_BATTLE");
     dispatch({ type: "INIT_BATTLE", player, enemy });
     setLoading(false);
   }, [starterId, navigate, dispatch]);
@@ -76,7 +76,6 @@ export default function Game() {
   }, [initGame]);
 
   const handleSelectMove = (move: Card) => {
-    console.log("handleSelectMove", move.name);
     if (state.phase !== "battle") return;
     dispatch({ type: "SELECT_MOVE", move });
   };
@@ -90,12 +89,10 @@ export default function Game() {
   };
 
   const handleEndTurn = () => {
-    console.log("handleEndTurn");
     dispatch({ type: "END_TURN" });
   };
 
   const handleEnemyTurn = () => {
-    console.log("handleEnemyTurn triggered");
     dispatch({ type: "ENEMY_TURN" });
   };
 

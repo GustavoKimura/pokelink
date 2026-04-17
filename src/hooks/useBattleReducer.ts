@@ -1,7 +1,7 @@
 import { useReducer } from "react";
 import type { BattleState, PlayerPokemon, EnemyPokemon, Card } from "../types";
 import { drawCards } from "../utils/cardUtils";
-import { calculateDamage } from "../utils/battleUtils";
+import { calculateDamage, calculateShield } from "../utils/battleUtils";
 
 type BattleAction =
   | { type: "INIT_BATTLE"; player: PlayerPokemon; enemy: EnemyPokemon }
@@ -27,18 +27,32 @@ const isPlayerUnit = (
 function battleReducer(state: BattleState, action: BattleAction): BattleState {
   switch (action.type) {
     case "INIT_BATTLE": {
-      const turnOrder = [action.player, action.enemy].sort(
+      const playerWithShield = {
+        ...action.player,
+        shield: calculateShield(
+          action.player.pokemon.stats.defense,
+          action.player.level,
+        ),
+      };
+      const enemyWithShield = {
+        ...action.enemy,
+        shield: calculateShield(
+          action.enemy.pokemon.stats.defense,
+          action.enemy.level,
+        ),
+      };
+      const turnOrder = [playerWithShield, enemyWithShield].sort(
         (a, b) => b.pokemon.stats.speed - a.pokemon.stats.speed,
       );
       const firstIsPlayer = isPlayerUnit(turnOrder[0]);
       return {
         ...state,
         phase: firstIsPlayer ? "battle" : "enemy_turn",
-        player: action.player,
-        enemies: [action.enemy],
+        player: playerWithShield,
+        enemies: [enemyWithShield],
         turnOrder,
         currentTurnIndex: 0,
-        log: [`Batalha iniciada contra ${action.enemy.pokemon.name}!`],
+        log: [`Batalha iniciada contra ${enemyWithShield.pokemon.name}!`],
       };
     }
 
@@ -87,8 +101,21 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
     case "EXECUTE_ATTACK": {
       const { attacker, defender, move } = action;
       const damage = calculateDamage(attacker, defender, move);
-      const newHp = Math.max(0, defender.currentHp - damage);
-      const updatedDefender = { ...defender, currentHp: newHp };
+
+      let remainingDamage = damage;
+      let newShield = defender.shield;
+      if (newShield > 0) {
+        const shieldAbsorb = Math.min(newShield, remainingDamage);
+        newShield -= shieldAbsorb;
+        remainingDamage -= shieldAbsorb;
+      }
+      const newHp = Math.max(0, defender.currentHp - remainingDamage);
+
+      const updatedDefender = {
+        ...defender,
+        currentHp: newHp,
+        shield: newShield,
+      };
 
       let updatedPlayer = state.player;
       let updatedEnemies = state.enemies;
@@ -102,9 +129,13 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
         );
       }
 
+      const shieldMessage =
+        defender.shield > 0 && damage > newShield + remainingDamage
+          ? ` (escudo absorveu ${damage - remainingDamage})`
+          : "";
       const newLog = [
         ...state.log,
-        `${attacker.pokemon.name} usou ${move.name} e causou ${damage} de dano!`,
+        `${attacker.pokemon.name} usou ${move.name} e causou ${damage} de dano${shieldMessage}!`,
       ];
 
       const moveIndex = attacker.hand.findIndex((c) => c.id === move.id);

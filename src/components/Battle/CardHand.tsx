@@ -34,7 +34,6 @@ export default function CardHand({
   canPlay,
   onSelectCard,
 }: CardHandProps) {
-  console.log(`[CardHand] Rendering ${cards.length} cards, energy=${energy}`);
   return (
     <div>
       <div className="flex justify-between items-center mb-2">
@@ -59,13 +58,13 @@ export default function CardHand({
               }}
               disabled={!canPlay || !canAfford}
               className={`
-                ${bgColor} text-white rounded-lg p-3 min-w-[120px] text-left
+                ${bgColor} text-white rounded-lg p-3 min-w-30 text-left
                 ${canPlay && canAfford ? "hover:scale-105 cursor-pointer" : "opacity-50 cursor-not-allowed"}
                 transition-transform
               `}
             >
               <h4 className="font-bold capitalize">{card.name}</h4>
-              <p className="text-sm">💥 {card.power / 10}</p>
+              <p className="text-sm">💥 {card.power}</p>
               <p className="text-sm">⚡ {card.energyCost}</p>
               <p className="text-xs mt-1">{card.type}</p>
             </button>

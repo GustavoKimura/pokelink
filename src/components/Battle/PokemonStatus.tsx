@@ -51,9 +51,15 @@ export default function PokemonStatus({
             />
           </div>
 
-          <p className="text-sm mb-2">
+          <p className="text-sm mb-1">
             HP: {pokemon.currentHp} / {pokemon.maxHp}
           </p>
+
+          {pokemon.shield > 0 && (
+            <p className="text-sm mb-1 text-blue-400">
+              🛡️ Escudo: {pokemon.shield}
+            </p>
+          )}
 
           <div className="flex gap-1">
             {pokemon.pokemon.types.map((type) => (

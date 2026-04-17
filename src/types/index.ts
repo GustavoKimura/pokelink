@@ -50,6 +50,7 @@ export interface PlayerPokemon {
   level: number;
   currentHp: number;
   maxHp: number;
+  shield: number;
   deck: Card[];
   hand: Card[];
   discardPile: Card[];
@@ -63,6 +64,7 @@ export interface EnemyPokemon {
   level: number;
   currentHp: number;
   maxHp: number;
+  shield: number;
   deck: Card[];
   hand: Card[];
   discardPile: Card[];
