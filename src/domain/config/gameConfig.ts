@@ -59,3 +59,10 @@ export const STARTER_OPTIONS = [
     description: "Pokémon Pele Rocha. Crescimento lento, mas poder devastador.",
   },
 ];
+
+export const BASE_GOLD_PER_BATTLE = 5;
+export const GOLD_PER_ENEMY_LEVEL = 2;
+export const GOLD_ON_SKIP_CARD = 20;
+
+export const SHOP_SLOTS = 4;
+export const SHOP_REFRESH_COST = 10;

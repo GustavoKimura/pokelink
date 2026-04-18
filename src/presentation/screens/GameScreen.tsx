@@ -40,7 +40,12 @@ export default function GameScreen() {
   }, [starterId, customDeck, navigate, initializeRun]);
 
   useEffect(() => {
-    if (phase === "level_up" || phase === "evolution") {
+    if (
+      phase === "level_up" ||
+      phase === "evolution" ||
+      phase === "rest" ||
+      phase === "shop"
+    ) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -61,6 +66,7 @@ export default function GameScreen() {
   const isMapPhase =
     phase === "map" ||
     phase === "rest" ||
+    phase === "shop" ||
     phase === "level_up" ||
     phase === "evolution";
   const isBattlePhase = phase === "battle" || phase === "enemy_turn";

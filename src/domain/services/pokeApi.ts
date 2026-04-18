@@ -5,7 +5,7 @@ import {
   getOfficialArtworkUrl,
 } from "./cacheService";
 
-interface ApiPokemon {
+export interface ApiPokemon {
   id: number;
   name: string;
   sprites: { front_default: string | null; back_default: string | null };
@@ -33,11 +33,15 @@ interface ApiPokemonSpecies {
   evolution_chain: { url: string };
 }
 
-interface ApiEvolutionChain {
+export interface ApiEvolutionChain {
   chain: {
     species: { name: string };
     evolves_to: ApiEvolutionChain["chain"][];
-    evolution_details?: { min_level: number | null }[];
+    evolution_details?: {
+      min_level: number | null;
+      trigger?: { name: string };
+      item?: { name: string };
+    }[];
   };
 }
 

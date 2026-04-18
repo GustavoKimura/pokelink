@@ -8,6 +8,7 @@ export const createMapSlice: StoreSlice<MapSlice> = (set, get) => ({
   mapNodes: [],
   currentNodeId: null,
   restHealAmount: null,
+  shopInventory: null,
   initializeMap: () => {
     const mapNodes = generateMap();
     const startNodes = mapNodes.filter((n) => n.unlocked && !n.completed);
@@ -21,11 +22,15 @@ export const createMapSlice: StoreSlice<MapSlice> = (set, get) => ({
     const finalNodes = updatedNodes.map((n) =>
       n.id === nodeId ? { ...n, completed: true } : n,
     );
-    set({ mapNodes: finalNodes, currentNodeId: null });
+    set({ mapNodes: finalNodes, currentNodeId: null, shopInventory: null });
   },
   acknowledgeRest: () => {
     const { currentNodeId } = get();
     set({ restHealAmount: null, phase: "map" });
     if (currentNodeId) get().completeNode(currentNodeId);
   },
+  acknowledgeShop: () => {
+    set({ shopInventory: null, phase: "map" });
+  },
+  setShopInventory: (inventory) => set({ shopInventory: inventory }),
 });

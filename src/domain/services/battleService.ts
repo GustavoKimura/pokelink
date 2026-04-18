@@ -66,10 +66,13 @@ export const getEffectiveness = (
 ): number => {
   if (isTypeless) return 1;
   let multiplier = 1;
-  const chart = typeEffectivenessChart[moveType.toLowerCase()];
+  const chart =
+    typeEffectivenessChart[
+      moveType.toLowerCase() as keyof typeof typeEffectivenessChart
+    ];
   if (!chart) return multiplier;
   for (const defType of defenderTypes) {
-    const effectiveness = chart[defType.toLowerCase()];
+    const effectiveness = chart[defType.toLowerCase() as keyof typeof chart];
     if (effectiveness !== undefined) multiplier *= effectiveness;
   }
   return multiplier;

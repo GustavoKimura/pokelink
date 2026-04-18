@@ -1,6 +1,6 @@
 import type { PlayerPokemon } from "./Player";
 
-export type NodeType = "battle" | "rest" | "boss";
+export type NodeType = "battle" | "rest" | "boss" | "shop";
 
 export interface MapNode {
   id: string;
@@ -11,6 +11,7 @@ export interface MapNode {
   connections: string[];
   completed: boolean;
   unlocked: boolean;
+  shopInventory?: string[];
 }
 
 export interface GameRunState {

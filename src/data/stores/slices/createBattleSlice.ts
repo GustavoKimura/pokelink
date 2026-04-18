@@ -16,7 +16,12 @@ import {
   calculateDamage,
   getEffectiveness,
 } from "../../../domain/services/battleService";
-import { CARDS_PER_TURN, MAX_ENERGY } from "../../../domain/config/gameConfig";
+import {
+  CARDS_PER_TURN,
+  MAX_ENERGY,
+  BASE_GOLD_PER_BATTLE,
+  GOLD_PER_ENEMY_LEVEL,
+} from "../../../domain/config/gameConfig";
 
 const isPlayerUnit = (
   unit: PlayerPokemon | EnemyPokemon,
@@ -217,6 +222,9 @@ export const createBattleSlice: StoreSlice<BattleSlice> = (set, get) => ({
     const enemyDead = newEnemies.every((e) => e.currentHp <= 0);
     const playerDead = newPlayer ? newPlayer.currentHp <= 0 : false;
     if (enemyDead) {
+      const goldEarned =
+        BASE_GOLD_PER_BATTLE + defender.level * GOLD_PER_ENEMY_LEVEL;
+      get().addGold(goldEarned);
       get().endBattle(true);
       return;
     }

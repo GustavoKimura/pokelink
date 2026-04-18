@@ -4,7 +4,8 @@ import PokemonStatus from "./PokemonStatus";
 import CardHand from "./CardHand";
 import BattleLog from "./BattleLog";
 import DeckViewerModal from "../common/DeckViewerModal";
-import { BookOpen } from "lucide-react";
+import InventoryModal from "../common/InventoryModal";
+import { BookOpen, Backpack } from "lucide-react";
 
 export default function BattleScreen() {
   const {
@@ -13,6 +14,7 @@ export default function BattleScreen() {
     enemies,
     isTargeting,
     battleLog,
+    gold,
     selectCard,
     selectTarget,
     cancelTarget,
@@ -23,6 +25,7 @@ export default function BattleScreen() {
   } = useGameViewModel();
   const [showPlayerDeck, setShowPlayerDeck] = useState(false);
   const [showEnemyDeck, setShowEnemyDeck] = useState(false);
+  const [showInventory, setShowInventory] = useState(false);
 
   const isPlayerTurn =
     player && turnOrder[currentTurnIndex]?.pokemon.id === player.pokemon.id;
@@ -42,6 +45,17 @@ export default function BattleScreen() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
+      <div className="absolute top-4 right-4 z-10 flex gap-2">
+        <div className="flex items-center gap-1 px-3 py-1 bg-yellow-700 rounded-lg">
+          <span>💰</span> {gold}
+        </div>
+        <button
+          onClick={() => setShowInventory(true)}
+          className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600"
+        >
+          <Backpack className="w-5 h-5" />
+        </button>
+      </div>
       <div className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-md flex justify-center mb-8 relative">
           <PokemonStatus pokemon={currentEnemy} isPlayer={false} />
@@ -130,6 +144,9 @@ export default function BattleScreen() {
           pokemon={currentEnemy.pokemon}
           onClose={() => setShowEnemyDeck(false)}
         />
+      )}
+      {showInventory && (
+        <InventoryModal onClose={() => setShowInventory(false)} />
       )}
     </div>
   );

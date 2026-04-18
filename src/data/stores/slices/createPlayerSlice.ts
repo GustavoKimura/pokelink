@@ -59,6 +59,8 @@ export const createPlayerSlice: StoreSlice<PlayerSlice> = (set, get) => ({
     let updatedPlayer = { ...player };
     if (selectedCard) {
       updatedPlayer.runDeck = [...updatedPlayer.runDeck, selectedCard];
+    } else {
+      get().awardSkipCardGold();
     }
 
     if (levelUpQueue.length === 0) {

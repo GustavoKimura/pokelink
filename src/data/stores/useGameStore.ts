@@ -4,6 +4,7 @@ import type { GameSlice, LevelUpStep, StoreState, StoreSlice } from "./types";
 import { createPlayerSlice } from "./slices/createPlayerSlice";
 import { createMapSlice } from "./slices/createMapSlice";
 import { createBattleSlice } from "./slices/createBattleSlice";
+import { createInventorySlice } from "./slices/createInventorySlice";
 import { REST_HEAL_PERCENT } from "../../domain/config/gameConfig";
 import {
   calculateXpGain,
@@ -36,6 +37,11 @@ const createGameSlice: StoreSlice<GameSlice> = (set, get) => ({
         restHealAmount: heal,
         phase: "rest",
       });
+      return;
+    }
+
+    if (node.type === "shop") {
+      set({ phase: "shop" });
       return;
     }
 
@@ -138,7 +144,10 @@ const createGameSlice: StoreSlice<GameSlice> = (set, get) => ({
       levelUpData: null,
       evolutionData: null,
       restHealAmount: null,
+      shopInventory: null,
       levelUpQueue: [],
+      gold: 100,
+      inventory: [],
     });
   },
 });
@@ -149,5 +158,6 @@ export const useGameStore = create<StoreState>()(
     ...createPlayerSlice(...a),
     ...createMapSlice(...a),
     ...createBattleSlice(...a),
+    ...createInventorySlice(...a),
   })),
 );

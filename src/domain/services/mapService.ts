@@ -5,7 +5,18 @@ import {
   MAP_COLS,
   BOSS_ID,
   WILD_POKEMON_IDS,
+  SHOP_SLOTS,
 } from "../config/gameConfig";
+import { SHOP_ITEM_POOL } from "../models/Item";
+
+const generateShopInventory = (): string[] => {
+  const inventory: string[] = [];
+  for (let i = 0; i < SHOP_SLOTS; i++) {
+    const randomIndex = Math.floor(Math.random() * SHOP_ITEM_POOL.length);
+    inventory.push(SHOP_ITEM_POOL[randomIndex]);
+  }
+  return inventory;
+};
 
 export const generateMap = (): MapNode[] => {
   const nodes: MapNode[] = [];
@@ -15,8 +26,9 @@ export const generateMap = (): MapNode[] => {
     for (let col = 0; col < cols; col++) {
       const isBossRow = row === rows - 1;
       const isBottomRow = row === 0;
-      let type: "battle" | "rest" | "boss";
+      let type: "battle" | "rest" | "boss" | "shop";
       let pokemonId: number | undefined;
+      let shopInventory: string[] | undefined;
       if (isBossRow) {
         if (col !== 2) continue;
         type = "boss";
@@ -26,12 +38,19 @@ export const generateMap = (): MapNode[] => {
         pokemonId =
           WILD_POKEMON_IDS[Math.floor(Math.random() * WILD_POKEMON_IDS.length)];
       } else {
-        type = Math.random() < 0.7 ? "battle" : "rest";
-        if (type === "battle")
+        const rand = Math.random();
+        if (rand < 0.6) {
+          type = "battle";
           pokemonId =
             WILD_POKEMON_IDS[
               Math.floor(Math.random() * WILD_POKEMON_IDS.length)
             ];
+        } else if (rand < 0.8) {
+          type = "rest";
+        } else {
+          type = "shop";
+          shopInventory = generateShopInventory();
+        }
       }
       const level = isBottomRow
         ? 1
@@ -46,6 +65,7 @@ export const generateMap = (): MapNode[] => {
         connections: [],
         completed: false,
         unlocked: row === 0,
+        shopInventory,
       });
     }
   }
@@ -74,8 +94,9 @@ export const generateMap = (): MapNode[] => {
         if (!node.connections.includes(target.id))
           node.connections.push(target.id);
       }
-      if (node.connections.length === 0 && possibleTargets.length > 0)
+      if (node.connections.length === 0 && possibleTargets.length > 0) {
         node.connections.push(possibleTargets[0].id);
+      }
     }
     for (const target of nextRowNodes) {
       const hasIncoming = currentRowNodes.some((src) =>

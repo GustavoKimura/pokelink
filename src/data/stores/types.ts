@@ -7,6 +7,7 @@ import type {
 import type { Pokemon } from "../../domain/models/Pokemon";
 import type { Card } from "../../domain/models/Card";
 import type { MapNode } from "../../domain/models/Map";
+import type { InventoryItem } from "../../domain/models/Item";
 
 export interface LevelUpStep {
   type: "level" | "evolution";
@@ -42,10 +43,13 @@ export interface MapSlice {
   mapNodes: MapNode[];
   currentNodeId: string | null;
   restHealAmount: number | null;
+  shopInventory: string[] | null;
   initializeMap: () => void;
   selectNode: (nodeId: string) => void;
   completeNode: (nodeId: string) => void;
   acknowledgeRest: () => void;
+  acknowledgeShop: () => void;
+  setShopInventory: (inventory: string[] | null) => void;
 }
 
 export interface BattleSlice {
@@ -63,12 +67,32 @@ export interface BattleSlice {
   executeEnemyAction: () => void;
 }
 
+export interface InventorySlice {
+  gold: number;
+  inventory: InventoryItem[];
+  addGold: (amount: number) => void;
+  spendGold: (amount: number) => boolean;
+  addItem: (itemId: string, quantity?: number) => void;
+  removeItem: (itemId: string, quantity?: number) => void;
+  applyItemToPokemon: (
+    itemId: string,
+    target: PlayerPokemon,
+  ) => Promise<{
+    success: boolean;
+    evolvedPokemon?: Pokemon;
+    updatedTarget?: PlayerPokemon;
+  }>;
+  getItemQuantity: (itemId: string) => number;
+  awardSkipCardGold: () => void;
+}
+
 export interface GameSlice {
   phase:
     | "loading"
     | "map"
     | "battle"
     | "rest"
+    | "shop"
     | "victory"
     | "defeat"
     | "level_up"
@@ -80,7 +104,11 @@ export interface GameSlice {
   resetRun: () => void;
 }
 
-export type StoreState = PlayerSlice & MapSlice & BattleSlice & GameSlice;
+export type StoreState = PlayerSlice &
+  MapSlice &
+  BattleSlice &
+  GameSlice &
+  InventorySlice;
 
 export type StoreSlice<T> = StateCreator<
   StoreState,

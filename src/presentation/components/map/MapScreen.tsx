@@ -12,7 +12,9 @@ import "reactflow/dist/style.css";
 import { useGameViewModel } from "../../viewmodels/useGameViewModel";
 import { useAccountStore } from "../../../data/stores/accountStore";
 import DeckViewerModal from "../common/DeckViewerModal";
-import { BookOpen } from "lucide-react";
+import InventoryModal from "../common/InventoryModal";
+import ShopNodeModal from "./ShopNodeModal";
+import { BookOpen, Backpack } from "lucide-react";
 
 const nodeTypes = {};
 const edgeTypes = {};
@@ -29,18 +31,24 @@ export default function MapScreen() {
     mapNodes,
     currentNodeId,
     player,
+    gold,
     selectNode,
     proceedToNode,
     resetRun,
+    shopInventory,
+    acknowledgeShop,
+    setShopInventory,
   } = useGameViewModel();
 
   const [showDeckViewer, setShowDeckViewer] = useState(false);
+  const [showInventory, setShowInventory] = useState(false);
 
   const { flowNodes, flowEdges } = useMemo(() => {
     const nodeTypeStyles = {
       battle: { background: "#ef4444", border: "#dc2626" },
       rest: { background: "#10b981", border: "#059669" },
       boss: { background: "#8b5cf6", border: "#7c3aed" },
+      shop: { background: "#fbbf24", border: "#d97706" },
     };
     const flowNodes: Node[] = mapNodes.map((node) => ({
       id: node.id,
@@ -51,7 +59,9 @@ export default function MapScreen() {
             ? `⚔️ Nv.${node.level}`
             : node.type === "rest"
               ? "🏕️ Descanso"
-              : `👑 Nv.${node.level}`,
+              : node.type === "shop"
+                ? "🛒 Loja"
+                : `👑 Nv.${node.level}`,
       },
       style: {
         background: nodeTypeStyles[node.type].background,
@@ -84,18 +94,43 @@ export default function MapScreen() {
   const canProceed =
     selectedNode && selectedNode.unlocked && !selectedNode.completed;
 
+  const handleNodeClick = (_: React.MouseEvent, node: Node) => {
+    const n = mapNodes.find((x) => x.id === node.id);
+    if (n && n.unlocked && !n.completed) selectNode(node.id);
+  };
+
+  const handleProceed = () => {
+    if (!selectedNode) return;
+    if (selectedNode.type === "shop" && selectedNode.shopInventory) {
+      setShopInventory(selectedNode.shopInventory);
+      return;
+    }
+    proceedToNode();
+  };
+
   return (
     <div className="h-screen bg-gray-900 text-white flex flex-col">
       <div className="p-4 bg-gray-800 flex justify-between items-center">
         <h1 className="text-2xl font-bold text-yellow-400">PokéLink - Mapa</h1>
         <div className="flex gap-2">
+          <span className="flex items-center gap-1 px-3 py-1 bg-yellow-700 rounded-lg">
+            <span>💰</span> {gold}
+          </span>
           {player && (
-            <button
-              onClick={() => setShowDeckViewer(true)}
-              className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600"
-            >
-              <BookOpen className="w-5 h-5" />
-            </button>
+            <>
+              <button
+                onClick={() => setShowInventory(true)}
+                className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600"
+              >
+                <Backpack className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setShowDeckViewer(true)}
+                className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600"
+              >
+                <BookOpen className="w-5 h-5" />
+              </button>
+            </>
           )}
           <button
             onClick={() => {
@@ -161,10 +196,7 @@ export default function MapScreen() {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           defaultEdgeOptions={defaultEdgeOptions}
-          onNodeClick={(_, node) => {
-            const n = mapNodes.find((x) => x.id === node.id);
-            if (n && n.unlocked && !n.completed) selectNode(node.id);
-          }}
+          onNodeClick={handleNodeClick}
           fitView
           nodesDraggable={false}
           nodesConnectable={false}
@@ -181,14 +213,20 @@ export default function MapScreen() {
             <p>
               Nó selecionado:{" "}
               <span className="font-bold">
-                {selectedNode.type === "rest" ? "descanso" : selectedNode.type}
+                {selectedNode.type === "rest"
+                  ? "descanso"
+                  : selectedNode.type === "shop"
+                    ? "loja"
+                    : selectedNode.type}
               </span>{" "}
-              {selectedNode.type !== "rest" && `(Nível ${selectedNode.level})`}
+              {selectedNode.type !== "rest" &&
+                selectedNode.type !== "shop" &&
+                `(Nível ${selectedNode.level})`}
             </p>
           )}
         </div>
         <button
-          onClick={proceedToNode}
+          onClick={handleProceed}
           disabled={!canProceed}
           className={`px-6 py-2 rounded-lg font-semibold ${
             canProceed
@@ -205,6 +243,18 @@ export default function MapScreen() {
           runDeck={player.runDeck}
           pokemon={player.pokemon}
           onClose={() => setShowDeckViewer(false)}
+        />
+      )}
+      {showInventory && (
+        <InventoryModal onClose={() => setShowInventory(false)} />
+      )}
+      {shopInventory && (
+        <ShopNodeModal
+          inventory={shopInventory}
+          onClose={() => {
+            acknowledgeShop();
+            setShopInventory(null);
+          }}
         />
       )}
     </div>
