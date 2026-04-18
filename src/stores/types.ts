@@ -60,6 +60,7 @@ export interface BattleSlice {
   selectTarget: (targetId: number) => void;
   cancelTarget: () => void;
   endTurn: () => void;
+  executeEnemyAction: () => void;
 }
 
 export interface GameSlice {
@@ -71,7 +72,8 @@ export interface GameSlice {
     | "victory"
     | "defeat"
     | "level_up"
-    | "evolution";
+    | "evolution"
+    | "enemy_turn";
   initializeRun: (starterId: number, customDeck?: Card[]) => Promise<void>;
   proceedToNode: () => Promise<void>;
   endBattle: (victory: boolean) => Promise<void>;

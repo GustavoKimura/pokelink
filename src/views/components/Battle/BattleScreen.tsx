@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useGameStore } from "../../../stores/useGameStore";
 import PokemonStatus from "./PokemonStatus";
 import CardHand from "./CardHand";
@@ -8,6 +8,7 @@ import { BookOpen } from "lucide-react";
 
 export default function BattleScreen() {
   const {
+    phase,
     player,
     enemies,
     isTargeting,
@@ -16,13 +17,24 @@ export default function BattleScreen() {
     selectTarget,
     cancelTarget,
     endTurn,
+    executeEnemyAction,
     turnOrder,
     currentTurnIndex,
   } = useGameStore();
   const [showPlayerDeck, setShowPlayerDeck] = useState(false);
   const [showEnemyDeck, setShowEnemyDeck] = useState(false);
 
-  const isPlayerTurn = turnOrder[currentTurnIndex] === player;
+  const isPlayerTurn =
+    player && turnOrder[currentTurnIndex]?.pokemon.id === player.pokemon.id;
+
+  useEffect(() => {
+    if (phase === "enemy_turn") {
+      const timer = setTimeout(() => {
+        executeEnemyAction();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [phase, executeEnemyAction]);
 
   if (!player || enemies.length === 0) return null;
 
@@ -88,7 +100,7 @@ export default function BattleScreen() {
             player={player}
             cards={player.hand}
             energy={player.energy}
-            canPlay={isPlayerTurn}
+            canPlay={!!isPlayerTurn}
             onSelectCard={selectCard}
           />
           {isPlayerTurn && (

@@ -81,14 +81,17 @@ export const createBattleSlice: StoreSlice<BattleSlice> = (set, get) => ({
     firstUnit = prepareForTurnStart(firstUnit);
     turnOrder[0] = firstUnit;
 
+    const isFirstUnitPlayer = isPlayerUnit(firstUnit);
+
     set({
-      player: isPlayerUnit(firstUnit)
+      player: isFirstUnitPlayer
         ? (firstUnit as PlayerPokemon)
         : playerWithShield,
-      enemies: [isPlayerUnit(firstUnit) ? enemy : (firstUnit as EnemyPokemon)],
+      enemies: [isFirstUnitPlayer ? enemy : (firstUnit as EnemyPokemon)],
       turnOrder,
       currentTurnIndex: 0,
       battleLog: [`Batalha iniciada contra ${enemy.pokemon.name}!`],
+      phase: isFirstUnitPlayer ? "battle" : "enemy_turn",
     });
   },
   selectCard: (card) => {
@@ -106,11 +109,12 @@ export const createBattleSlice: StoreSlice<BattleSlice> = (set, get) => ({
   selectTarget: (targetId) => {
     const { turnOrder, currentTurnIndex, selectedCard, player } = get();
     if (!selectedCard) return;
+
     const attacker = turnOrder[currentTurnIndex];
-    const defender =
-      turnOrder.find(
-        (unit) => unit.pokemon.id === targetId && unit !== attacker,
-      ) || player;
+    const defender = isPlayerUnit(attacker)
+      ? get().enemies.find((e) => e.pokemon.id === targetId)
+      : player;
+
     if (!attacker || !defender) return;
 
     const effectiveness = getEffectiveness(
@@ -166,34 +170,42 @@ export const createBattleSlice: StoreSlice<BattleSlice> = (set, get) => ({
       );
     }
 
+    const isPlayerAttacker = isPlayerUnit(attacker);
+    const newPlayer = isPlayerAttacker
+      ? (updatedAttacker as PlayerPokemon)
+      : isPlayerUnit(updatedDefender)
+        ? (updatedDefender as PlayerPokemon)
+        : get().player;
+    const newEnemies = isPlayerAttacker
+      ? get().enemies.map((e) =>
+          e.pokemon.id === (updatedDefender as EnemyPokemon).pokemon.id
+            ? (updatedDefender as EnemyPokemon)
+            : e,
+        )
+      : get().enemies.map((e) =>
+          e.pokemon.id === (updatedAttacker as EnemyPokemon).pokemon.id
+            ? (updatedAttacker as EnemyPokemon)
+            : e,
+        );
+
     const newTurnOrder = get().turnOrder.map((unit) => {
-      if (unit === attacker) return updatedAttacker;
-      if (unit === defender) return updatedDefender;
+      if (unit.pokemon.id === updatedAttacker.pokemon.id)
+        return updatedAttacker;
+      if (unit.pokemon.id === updatedDefender.pokemon.id)
+        return updatedDefender;
       return unit;
     });
 
     set({
-      player: isPlayerUnit(updatedAttacker)
-        ? updatedAttacker
-        : isPlayerUnit(updatedDefender)
-          ? updatedDefender
-          : get().player,
-      enemies: get().enemies.map((e) =>
-        isPlayerUnit(e)
-          ? e
-          : e.pokemon.id === updatedAttacker.pokemon.id
-            ? updatedAttacker
-            : e.pokemon.id === updatedDefender.pokemon.id
-              ? updatedDefender
-              : e,
-      ),
+      player: newPlayer,
+      enemies: newEnemies,
       turnOrder: newTurnOrder,
       battleLog: newLog,
       selectedCard: null,
       isTargeting: false,
     });
 
-    if (isPlayerUnit(attacker)) {
+    if (!isPlayerAttacker) {
       setTimeout(() => get().endTurn(), 500);
     }
   },
@@ -216,32 +228,38 @@ export const createBattleSlice: StoreSlice<BattleSlice> = (set, get) => ({
       i === nextIndex ? nextUnit : u,
     );
 
+    const isNextUnitPlayer = isPlayerUnit(nextUnit);
     set({
-      player: isPlayerUnit(nextUnit) ? nextUnit : get().player,
-      enemies: get().enemies.map((e) =>
-        e.pokemon.id === nextUnit.pokemon.id ? (nextUnit as EnemyPokemon) : e,
-      ),
+      player: isNextUnitPlayer ? (nextUnit as PlayerPokemon) : get().player,
+      enemies: isNextUnitPlayer
+        ? get().enemies
+        : get().enemies.map((e) =>
+            e.pokemon.id === nextUnit.pokemon.id
+              ? (nextUnit as EnemyPokemon)
+              : e,
+          ),
       turnOrder: newTurnOrder,
       currentTurnIndex: nextIndex,
+      phase: isNextUnitPlayer ? "battle" : "enemy_turn",
     });
-
-    if (!isPlayerUnit(nextUnit)) {
-      setTimeout(() => {
-        const currentEnemy = get().turnOrder[
-          get().currentTurnIndex
-        ] as EnemyPokemon;
-        const availableMoves = currentEnemy.hand.filter(
-          (m) => m.energyCost <= currentEnemy.energy,
-        );
-        if (availableMoves.length > 0) {
-          const randomMove =
-            availableMoves[Math.floor(Math.random() * availableMoves.length)];
-          set({ selectedCard: randomMove });
-          get().selectTarget(get().player!.pokemon.id);
-        } else {
-          get().endTurn();
-        }
-      }, 1000);
+  },
+  executeEnemyAction: () => {
+    const { turnOrder, currentTurnIndex, player } = get();
+    const currentEnemy = turnOrder[currentTurnIndex] as EnemyPokemon;
+    if (!currentEnemy || !player) {
+      get().endTurn();
+      return;
+    }
+    const availableMoves = currentEnemy.hand.filter(
+      (m) => m.energyCost <= currentEnemy.energy,
+    );
+    if (availableMoves.length > 0) {
+      const randomMove =
+        availableMoves[Math.floor(Math.random() * availableMoves.length)];
+      set({ selectedCard: randomMove });
+      get().selectTarget(player.pokemon.id);
+    } else {
+      get().endTurn();
     }
   },
 });
