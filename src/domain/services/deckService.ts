@@ -28,6 +28,17 @@ const hasSecondaryEffect = (moveData: ApiMove): boolean => {
   return false;
 };
 
+const createCardFromApiMove = (moveData: ApiMove): Card => ({
+  id: String(moveData.id),
+  name: moveData.name.charAt(0).toUpperCase() + moveData.name.slice(1),
+  type: moveData.type.name,
+  power: moveData.power!,
+  pp: moveData.pp,
+  energyCost: calculateEnergyCost(moveData.pp),
+  description: "",
+  damageClass: moveData.damage_class.name as "physical" | "special",
+});
+
 export const buildInitialDeck = async (pokemon: Pokemon): Promise<Card[]> => {
   const levelOneMoves = pokemon.moves.filter((m) => m.levelLearnedAt === 1);
   const damageMoves: Card[] = [];
@@ -38,16 +49,7 @@ export const buildInitialDeck = async (pokemon: Pokemon): Promise<Card[]> => {
       moveData.damage_class.name !== "status" &&
       !hasSecondaryEffect(moveData)
     ) {
-      damageMoves.push({
-        id: String(moveData.id),
-        name: moveData.name.charAt(0).toUpperCase() + moveData.name.slice(1),
-        type: moveData.type.name,
-        power: moveData.power,
-        pp: moveData.pp,
-        energyCost: calculateEnergyCost(moveData.pp),
-        description: "",
-        damageClass: moveData.damage_class.name as "physical" | "special",
-      });
+      damageMoves.push(createCardFromApiMove(moveData));
     }
   }
   const deck: Card[] = [];
@@ -101,16 +103,7 @@ export const getLevelUpMoveOptions = async (
     for (const moveRef of levelMoves) {
       const moveData = (await getMove(moveRef.url)) as ApiMove;
       if (moveData.power !== null && moveData.damage_class.name !== "status") {
-        const card: Card = {
-          id: String(moveData.id),
-          name: moveData.name.charAt(0).toUpperCase() + moveData.name.slice(1),
-          type: moveData.type.name,
-          power: moveData.power,
-          pp: moveData.pp,
-          energyCost: calculateEnergyCost(moveData.pp),
-          description: "",
-          damageClass: moveData.damage_class.name as "physical" | "special",
-        };
+        const card = createCardFromApiMove(moveData);
         if (!allMoves.some((m) => m.id === card.id)) allMoves.push(card);
       }
     }

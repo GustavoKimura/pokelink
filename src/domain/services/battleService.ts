@@ -21,17 +21,29 @@ export const calculateShield = (
   return Math.floor((maxDefense * level) / SHIELD_DIVISOR) + SHIELD_BASE;
 };
 
+const getAttackStat = (
+  attacker: { pokemon: Pokemon },
+  damageClass: Card["damageClass"],
+): number => {
+  return damageClass === "physical"
+    ? attacker.pokemon.stats.attack
+    : attacker.pokemon.stats.specialAttack;
+};
+
+const computeBaseDamage = (
+  level: number,
+  power: number,
+  attackStat: number,
+): number => {
+  return (((2 * level) / 5 + 2) * power * attackStat) / 50 + 2;
+};
+
 export const calculateDamage = (
   attacker: PlayerPokemon | EnemyPokemon,
   move: Card,
 ): number => {
-  const level = attacker.level;
-  const power = move.power;
-  const attackStat =
-    move.damageClass === "physical"
-      ? attacker.pokemon.stats.attack
-      : attacker.pokemon.stats.specialAttack;
-  const baseDamage = (((2 * level) / 5 + 2) * power * attackStat) / 50 + 2;
+  const attackStat = getAttackStat(attacker, move.damageClass);
+  const baseDamage = computeBaseDamage(attacker.level, move.power, attackStat);
   return Math.max(1, Math.floor(baseDamage * DAMAGE_SCALING_FACTOR));
 };
 
@@ -39,13 +51,8 @@ export const calculateCardDisplayDamage = (
   attacker: { pokemon: Pokemon; level: number },
   move: Card,
 ): number => {
-  const level = attacker.level;
-  const power = move.power;
-  const attackStat =
-    move.damageClass === "physical"
-      ? attacker.pokemon.stats.attack
-      : attacker.pokemon.stats.specialAttack;
-  const baseDamage = (((2 * level) / 5 + 2) * power * attackStat) / 50 + 2;
+  const attackStat = getAttackStat(attacker, move.damageClass);
+  const baseDamage = computeBaseDamage(attacker.level, move.power, attackStat);
   return Math.floor(baseDamage * DAMAGE_SCALING_FACTOR);
 };
 
