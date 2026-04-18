@@ -39,6 +39,17 @@ export default function GameScreen() {
     }
   }, [starterId, customDeck, navigate, initializeRun]);
 
+  useEffect(() => {
+    if (phase === "level_up" || phase === "evolution") {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [phase]);
+
   if (phase === "loading") {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
@@ -47,10 +58,17 @@ export default function GameScreen() {
     );
   }
 
+  const isMapPhase =
+    phase === "map" ||
+    phase === "rest" ||
+    phase === "level_up" ||
+    phase === "evolution";
+  const isBattlePhase = phase === "battle" || phase === "enemy_turn";
+
   return (
     <>
-      {(phase === "map" || phase === "rest") && <MapScreen />}
-      {(phase === "battle" || phase === "enemy_turn") && <BattleScreen />}
+      {isMapPhase && <MapScreen />}
+      {isBattlePhase && <BattleScreen />}
       {phase === "defeat" && <GameOverModal />}
       {phase === "victory" && <VictoryModal />}
 

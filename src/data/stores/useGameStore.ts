@@ -89,7 +89,6 @@ const createGameSlice: StoreSlice<GameSlice> = (set, get) => ({
           currentPlayerForCalc.level,
         ),
       };
-
       const oldPokemon = currentPlayerForCalc.pokemon;
       currentPlayerForCalc = {
         ...currentPlayerForCalc,

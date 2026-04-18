@@ -13,7 +13,9 @@ export const createMapSlice: StoreSlice<MapSlice> = (set, get) => ({
     const startNodes = mapNodes.filter((n) => n.unlocked && !n.completed);
     set({ mapNodes, currentNodeId: startNodes[0]?.id || null });
   },
-  selectNode: (nodeId) => set({ currentNodeId: nodeId }),
+  selectNode: (nodeId) => {
+    set({ currentNodeId: nodeId });
+  },
   completeNode: (nodeId) => {
     const updatedNodes = unlockNextNodes(get().mapNodes, nodeId);
     const finalNodes = updatedNodes.map((n) =>

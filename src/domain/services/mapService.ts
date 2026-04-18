@@ -18,7 +18,7 @@ export const generateMap = (): MapNode[] => {
       let type: "battle" | "rest" | "boss";
       let pokemonId: number | undefined;
       if (isBossRow) {
-        if (col !== 1 && col !== 2) continue;
+        if (col !== 2) continue;
         type = "boss";
         pokemonId = BOSS_ID;
       } else if (isBottomRow) {
@@ -74,9 +74,8 @@ export const generateMap = (): MapNode[] => {
         if (!node.connections.includes(target.id))
           node.connections.push(target.id);
       }
-      if (node.connections.length === 0 && possibleTargets.length > 0) {
+      if (node.connections.length === 0 && possibleTargets.length > 0)
         node.connections.push(possibleTargets[0].id);
-      }
     }
     for (const target of nextRowNodes) {
       const hasIncoming = currentRowNodes.some((src) =>
@@ -110,9 +109,16 @@ export const unlockNextNodes = (
 ): MapNode[] => {
   const completedNode = nodes.find((n) => n.id === completedNodeId);
   if (!completedNode) return nodes;
-  return nodes.map((node) =>
-    completedNode.connections.includes(node.id)
-      ? { ...node, unlocked: true }
-      : node,
-  );
+  return nodes.map((node) => {
+    if (completedNode.connections.includes(node.id)) {
+      return { ...node, unlocked: true };
+    }
+    if (
+      node.position.y === completedNode.position.y &&
+      node.id !== completedNodeId
+    ) {
+      return { ...node, unlocked: false };
+    }
+    return node;
+  });
 };

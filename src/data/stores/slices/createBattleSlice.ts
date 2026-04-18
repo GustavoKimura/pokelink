@@ -21,6 +21,7 @@ import { CARDS_PER_TURN, MAX_ENERGY } from "../../../domain/config/gameConfig";
 const isPlayerUnit = (
   unit: PlayerPokemon | EnemyPokemon,
 ): unit is PlayerPokemon => "runXp" in unit;
+
 const prepareForTurnStart = <T extends PlayerPokemon | EnemyPokemon>(
   unit: T,
 ): T => {
@@ -100,7 +101,6 @@ export const createBattleSlice: StoreSlice<BattleSlice> = (set, get) => ({
   selectCard: (card) => {
     const { player, enemies } = get();
     if (!player || card.energyCost > player.energy) return;
-
     if (enemies.length === 1) {
       set({ selectedCard: card });
       get().selectTarget(enemies[0].pokemon.id);
@@ -112,12 +112,10 @@ export const createBattleSlice: StoreSlice<BattleSlice> = (set, get) => ({
   selectTarget: (targetId) => {
     const { turnOrder, currentTurnIndex, selectedCard, player } = get();
     if (!selectedCard) return;
-
     const attacker = turnOrder[currentTurnIndex];
     const defender = isPlayerUnit(attacker)
       ? get().enemies.find((e) => e.pokemon.id === targetId)
       : player;
-
     if (!attacker || !defender) return;
 
     const effectiveness = getEffectiveness(
@@ -208,6 +206,17 @@ export const createBattleSlice: StoreSlice<BattleSlice> = (set, get) => ({
       isTargeting: false,
     });
 
+    const enemyDead = newEnemies.every((e) => e.currentHp <= 0);
+    const playerDead = newPlayer ? newPlayer.currentHp <= 0 : false;
+    if (enemyDead) {
+      get().endBattle(true);
+      return;
+    }
+    if (playerDead) {
+      get().endBattle(false);
+      return;
+    }
+
     if (!isPlayerAttacker) {
       setTimeout(() => get().endTurn(), 500);
     }
@@ -226,11 +235,9 @@ export const createBattleSlice: StoreSlice<BattleSlice> = (set, get) => ({
     const nextIndex = (get().currentTurnIndex + 1) % get().turnOrder.length;
     let nextUnit = get().turnOrder[nextIndex];
     nextUnit = prepareForTurnStart(nextUnit);
-
     const newTurnOrder = get().turnOrder.map((u, i) =>
       i === nextIndex ? nextUnit : u,
     );
-
     const isNextUnitPlayer = isPlayerUnit(nextUnit);
     set({
       player: isNextUnitPlayer ? (nextUnit as PlayerPokemon) : get().player,

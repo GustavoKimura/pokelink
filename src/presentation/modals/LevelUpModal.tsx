@@ -31,8 +31,11 @@ export default function LevelUpModal({
   const speedChanged = newSpeed !== previousStats.speed;
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 overflow-y-auto py-8">
-      <div className="bg-gray-800 p-6 rounded-xl max-w-4xl w-full mx-4">
+    <div
+      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+      style={{ margin: 0 }}
+    >
+      <div className="bg-gray-800 p-6 rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <h2 className="text-3xl font-bold text-yellow-400 mb-2">Level Up!</h2>
         <p className="text-xl text-white mb-4">
           Seu Pokémon subiu para o nível {player.level}!
