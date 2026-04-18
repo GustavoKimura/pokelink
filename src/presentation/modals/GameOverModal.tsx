@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useGameViewModel } from "../../viewmodels/game/useGameViewModel";
+import { useGameViewModel } from "../viewmodels/useGameViewModel";
 
 export default function GameOverModal() {
   const navigate = useNavigate();

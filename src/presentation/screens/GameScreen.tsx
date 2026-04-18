@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import type { Card } from "../../domain/models/Card";
-import { useGameViewModel } from "../../viewmodels/game/useGameViewModel";
+import { useGameViewModel } from "../viewmodels/useGameViewModel";
 import BattleScreen from "../components/battle/BattleScreen";
 import MapScreen from "../components/map/MapScreen";
 import LevelUpModal from "../modals/LevelUpModal";

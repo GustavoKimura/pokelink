@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { STARTER_OPTIONS } from "../domain/config/gameConfig";
-import { getPokemon } from "../domain/services/pokeApi";
-import type { Pokemon } from "../domain/models/Pokemon";
+import { STARTER_OPTIONS } from "../../domain/config/gameConfig";
+import { getPokemon } from "../../domain/services/pokeApi";
+import type { Pokemon } from "../../domain/models/Pokemon";
 
 export const useStarterSelectionViewModel = () => {
   const [startersData, setStartersData] = useState<Record<number, Pokemon>>({});

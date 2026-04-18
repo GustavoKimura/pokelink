@@ -9,7 +9,7 @@ import ReactFlow, {
   Position,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { useGameViewModel } from "../../../viewmodels/game/useGameViewModel";
+import { useGameViewModel } from "../../viewmodels/useGameViewModel";
 import { useAccountStore } from "../../../data/stores/accountStore";
 import DeckViewerModal from "../common/DeckViewerModal";
 import { BookOpen } from "lucide-react";

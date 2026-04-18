@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useGameViewModel } from "../../../viewmodels/game/useGameViewModel";
+import { useGameViewModel } from "../../viewmodels/useGameViewModel";
 import PokemonStatus from "./PokemonStatus";
 import CardHand from "./CardHand";
 import BattleLog from "./BattleLog";

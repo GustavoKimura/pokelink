@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAccountStore } from "../../data/stores/accountStore";
-import { useGameViewModel } from "../../viewmodels/game/useGameViewModel";
+import { useGameViewModel } from "../viewmodels/useGameViewModel";
 import { VICTORY_XP } from "../../domain/config/gameConfig";
 
 interface VictoryModalProps {

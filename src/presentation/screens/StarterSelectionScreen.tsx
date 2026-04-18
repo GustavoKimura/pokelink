@@ -4,7 +4,7 @@ import { STARTER_OPTIONS } from "../../domain/config/gameConfig";
 import type { Card } from "../../domain/models/Card";
 import type { Pokemon } from "../../domain/models/Pokemon";
 import { useAccountStore } from "../../data/stores/accountStore";
-import { useStarterSelectionViewModel } from "../../viewmodels/useStarterSelectionViewModel";
+import { useStarterSelectionViewModel } from "../viewmodels/useStarterSelectionViewModel";
 import { usePokemonDisplayStats } from "../hooks/usePokemonDisplayStats";
 import StarterDeckModal from "../modals/StarterDeckModal";
 import { BookOpen } from "lucide-react";
