@@ -32,9 +32,10 @@ const createGameSlice: StoreSlice<GameSlice> = (set, get) => ({
     if (node.type === "rest") {
       const heal = Math.floor(player.maxHp * REST_HEAL_PERCENT);
       const newHp = Math.min(player.maxHp, player.currentHp + heal);
+      const actualHeal = newHp - player.currentHp;
       set({
         player: { ...player, currentHp: newHp },
-        restHealAmount: heal,
+        restHealAmount: actualHeal,
         phase: "rest",
       });
       return;

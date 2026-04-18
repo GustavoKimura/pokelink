@@ -1,4 +1,5 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { useGameViewModel } from "../../viewmodels/useGameViewModel";
 import { ITEMS_DB } from "../../../domain/models/Item";
 import { X, RefreshCw } from "lucide-react";
@@ -14,18 +15,31 @@ export default function ShopNodeModal({
 }: ShopNodeModalProps) {
   const { gold, spendGold, addItem } = useGameViewModel();
   const [items, setItems] = useState<string[]>(inventory);
-  const [refreshCost] = useState(10);
+  const [purchased, setPurchased] = useState<Set<number>>(new Set());
+  const [refreshed, setRefreshed] = useState(false);
 
-  const handleBuy = (itemId: string) => {
+  const handleBuy = (itemId: string, index: number) => {
+    if (purchased.has(index)) {
+      toast.error("Item já comprado!");
+      return;
+    }
     const item = ITEMS_DB[itemId];
     if (!item) return;
     if (spendGold(item.price)) {
       addItem(itemId, 1);
+      setPurchased(new Set(purchased).add(index));
+      toast.success(`${item.displayName} comprado!`);
+    } else {
+      toast.error("Ouro insuficiente!");
     }
   };
 
   const handleRefresh = () => {
-    if (spendGold(refreshCost)) {
+    if (refreshed) {
+      toast.error("Loja já foi atualizada!");
+      return;
+    }
+    if (spendGold(10)) {
       const newItems: string[] = [];
       for (let i = 0; i < 4; i++) {
         const randomIndex = Math.floor(
@@ -34,6 +48,11 @@ export default function ShopNodeModal({
         newItems.push(Object.keys(ITEMS_DB)[randomIndex]);
       }
       setItems(newItems);
+      setPurchased(new Set());
+      setRefreshed(true);
+      toast.success("Loja atualizada!");
+    } else {
+      toast.error("Ouro insuficiente para atualizar!");
     }
   };
 
@@ -53,7 +72,8 @@ export default function ShopNodeModal({
           {items.map((itemId, index) => {
             const item = ITEMS_DB[itemId];
             if (!item) return null;
-            const canAfford = gold >= item.price;
+            const isPurchased = purchased.has(index);
+            const canAfford = gold >= item.price && !isPurchased;
             return (
               <div
                 key={index}
@@ -64,7 +84,7 @@ export default function ShopNodeModal({
                 <p className="text-sm text-gray-300 mb-2">{item.description}</p>
                 <p className="text-yellow-400 mb-3">💰 {item.price}</p>
                 <button
-                  onClick={() => handleBuy(itemId)}
+                  onClick={() => handleBuy(itemId, index)}
                   disabled={!canAfford}
                   className={`w-full py-2 rounded-lg font-semibold ${
                     canAfford
@@ -72,7 +92,7 @@ export default function ShopNodeModal({
                       : "bg-gray-500 cursor-not-allowed"
                   }`}
                 >
-                  Comprar
+                  {isPurchased ? "Comprado" : "Comprar"}
                 </button>
               </div>
             );
@@ -81,15 +101,15 @@ export default function ShopNodeModal({
         <div className="flex justify-end">
           <button
             onClick={handleRefresh}
-            disabled={gold < refreshCost}
+            disabled={refreshed || gold < 10}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
-              gold >= refreshCost
+              !refreshed && gold >= 10
                 ? "bg-purple-600 hover:bg-purple-700"
                 : "bg-gray-600 cursor-not-allowed"
             }`}
           >
             <RefreshCw className="w-4 h-4" />
-            Atualizar ({refreshCost}💰)
+            {refreshed ? "Atualizado" : "Atualizar (10💰)"}
           </button>
         </div>
       </div>

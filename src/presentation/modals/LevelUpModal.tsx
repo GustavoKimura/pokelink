@@ -35,7 +35,7 @@ export default function LevelUpModal({
       className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
       style={{ margin: 0 }}
     >
-      <div className="bg-gray-800 p-6 rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-gray-800 p-6 rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto pointer-events-auto">
         <h2 className="text-3xl font-bold text-yellow-400 mb-2">Level Up!</h2>
         <p className="text-xl text-white mb-4">
           Seu Pokémon subiu para o nível {player.level}!
@@ -107,7 +107,7 @@ export default function LevelUpModal({
               <button
                 key={`${card.id}-${index}`}
                 onClick={() => onSelect(card)}
-                className="text-left hover:scale-105 transition-transform rounded-lg"
+                className="text-left hover:scale-105 transition-transform rounded-lg pointer-events-auto"
               >
                 <CardDisplay card={card} owner={player} />
               </button>
@@ -121,7 +121,7 @@ export default function LevelUpModal({
         <div className="flex justify-center gap-4 mt-6">
           <button
             onClick={onSkip}
-            className="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg font-semibold text-white"
+            className="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg font-semibold text-white pointer-events-auto"
           >
             Pular
           </button>

@@ -80,6 +80,20 @@ export const createInventorySlice: StoreSlice<InventorySlice> = (set, get) => ({
       get().removeItem(itemId, 1);
       if (result.updatedTarget) {
         set({ player: result.updatedTarget });
+        if (result.evolvedPokemon) {
+          set({
+            phase: "evolution",
+            evolutionData: {
+              oldPokemon: target.pokemon,
+              newPokemon: result.evolvedPokemon,
+            },
+          });
+          return {
+            success: true,
+            evolvedPokemon: result.evolvedPokemon,
+            updatedTarget: result.updatedTarget,
+          };
+        }
         if (result.levelUp) {
           const { player: updatedPlayer } = get();
           if (updatedPlayer) {

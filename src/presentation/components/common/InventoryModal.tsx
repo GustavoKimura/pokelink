@@ -67,7 +67,11 @@ export default function InventoryModal({ onClose }: InventoryModalProps) {
 
   const handleCardSelect = (card: Card) => {
     if (!player || !selectedItem) return;
-    const updatedRunDeck = player.runDeck.filter((c) => c.id !== card.id);
+    const targetIndex = player.runDeck.findIndex((c) => c.id === card.id);
+    if (targetIndex === -1) return;
+    const updatedRunDeck = player.runDeck.filter(
+      (_, idx) => idx !== targetIndex,
+    );
     updatePlayerRunDeck(updatedRunDeck);
     removeItem(selectedItem, 1);
     toast.success("Carta removida com sucesso!");

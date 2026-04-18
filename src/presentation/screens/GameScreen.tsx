@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
+import toast from "react-hot-toast";
 import type { Card } from "../../domain/models/Card";
 import { useGameViewModel } from "../viewmodels/useGameViewModel";
 import BattleScreen from "../components/battle/BattleScreen";
@@ -7,7 +8,6 @@ import MapScreen from "../components/map/MapScreen";
 import LevelUpModal from "../modals/LevelUpModal";
 import VictoryModal from "../modals/VictoryModal";
 import GameOverModal from "../modals/GameOverModal";
-import RestModal from "../modals/RestModal";
 import EvolutionModal from "../modals/EvolutionModal";
 
 export default function GameScreen() {
@@ -40,12 +40,18 @@ export default function GameScreen() {
   }, [starterId, customDeck, navigate, initializeRun]);
 
   useEffect(() => {
-    if (
-      phase === "level_up" ||
-      phase === "evolution" ||
-      phase === "rest" ||
-      phase === "shop"
-    ) {
+    if (phase === "rest" && restHealAmount !== null) {
+      if (restHealAmount === 0) {
+        toast("HP já está cheio!", { icon: "💤" });
+      } else {
+        toast.success(`Recuperou ${restHealAmount} de HP!`);
+      }
+      acknowledgeRest();
+    }
+  }, [phase, restHealAmount, acknowledgeRest]);
+
+  useEffect(() => {
+    if (phase === "level_up" || phase === "evolution" || phase === "shop") {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -77,10 +83,6 @@ export default function GameScreen() {
       {isBattlePhase && <BattleScreen />}
       {phase === "defeat" && <GameOverModal />}
       {phase === "victory" && <VictoryModal />}
-
-      {phase === "rest" && restHealAmount !== null && (
-        <RestModal onContinue={acknowledgeRest} healAmount={restHealAmount} />
-      )}
 
       {phase === "level_up" && levelUpData && (
         <LevelUpModal

@@ -24,7 +24,9 @@ export default function PokemonStatus({
 
   return (
     <div className="bg-gray-800 rounded-xl p-4 w-full">
-      <div className="flex items-center gap-4">
+      <div
+        className={`flex ${isPlayer ? "flex-row" : "flex-row-reverse"} items-center gap-4`}
+      >
         <img
           src={sprite}
           alt={pokemon.pokemon.name}

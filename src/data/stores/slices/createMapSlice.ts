@@ -25,12 +25,22 @@ export const createMapSlice: StoreSlice<MapSlice> = (set, get) => ({
     set({ mapNodes: finalNodes, currentNodeId: null, shopInventory: null });
   },
   acknowledgeRest: () => {
-    const { currentNodeId } = get();
-    set({ restHealAmount: null, phase: "map" });
-    if (currentNodeId) get().completeNode(currentNodeId);
+    const { currentNodeId, player } = get();
+    if (!currentNodeId || !player) return;
+    const heal = Math.floor(player.maxHp * 0.5);
+    const newHp = Math.min(player.maxHp, player.currentHp + heal);
+    const actualHeal = newHp - player.currentHp;
+    set({
+      player: { ...player, currentHp: newHp },
+      restHealAmount: actualHeal,
+      phase: "map",
+    });
+    get().completeNode(currentNodeId);
   },
   acknowledgeShop: () => {
+    const { currentNodeId } = get();
     set({ shopInventory: null, phase: "map" });
+    if (currentNodeId) get().completeNode(currentNodeId);
   },
   setShopInventory: (inventory) => set({ shopInventory: inventory }),
 });
