@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Personal files
+project-dumper.ps1
+project_content.txt
+project_structure.txt
