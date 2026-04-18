@@ -53,10 +53,11 @@ export default function BattleScreen({
       onEndTurn();
       return;
     }
-    const canAttack = currentEnemy.hand.some(
-      (m: Card) => m.energyCost <= currentEnemy.energy,
-    );
-    if (!canAttack) {
+    if (
+      !currentEnemy.hand.some(
+        (move: Card) => move.energyCost <= currentEnemy.energy,
+      )
+    ) {
       onEndTurn();
       return;
     }

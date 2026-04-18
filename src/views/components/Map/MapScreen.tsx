@@ -50,7 +50,6 @@ export default function MapScreen({
       rest: { background: "#10b981", border: "#059669" },
       boss: { background: "#8b5cf6", border: "#7c3aed" },
     };
-
     const flowNodes: Node[] = nodes.map((node) => {
       const label =
         node.type === "battle"
@@ -58,7 +57,6 @@ export default function MapScreen({
           : node.type === "rest"
             ? "🏕️ Descanso"
             : `👑 Nv.${node.level}`;
-
       return {
         id: node.id,
         position: node.position,
@@ -78,7 +76,6 @@ export default function MapScreen({
         targetPosition: Position.Bottom,
       };
     });
-
     const flowEdges: Edge[] = nodes.flatMap((node) =>
       node.connections.map((targetId) => ({
         id: `${node.id}-${targetId}`,
@@ -89,31 +86,12 @@ export default function MapScreen({
         animated: true,
       })),
     );
-
     return { flowNodes, flowEdges };
   }, [nodes, currentNodeId]);
-
-  const handleNodeClick = (_: React.MouseEvent, node: Node) => {
-    const mapNode = nodes.find((n) => n.id === node.id);
-    if (mapNode && mapNode.unlocked && !mapNode.completed) {
-      onNodeSelect(node.id);
-    }
-  };
 
   const selectedNode = nodes.find((n) => n.id === currentNodeId);
   const canProceed =
     selectedNode && selectedNode.unlocked && !selectedNode.completed;
-
-  const handleQuitRun = () => {
-    resetRun();
-    navigate("/");
-  };
-
-  const handleResetAccount = () => {
-    resetAccount();
-    resetRun();
-    navigate("/");
-  };
 
   return (
     <div className="h-screen bg-gray-900 text-white flex flex-col">
@@ -124,26 +102,31 @@ export default function MapScreen({
             <button
               onClick={() => setShowDeckViewer(true)}
               className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600"
-              title="Ver Baralho da Run"
             >
               <BookOpen className="w-5 h-5" />
             </button>
           )}
           <button
-            onClick={handleQuitRun}
+            onClick={() => {
+              resetRun();
+              navigate("/");
+            }}
             className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg"
           >
             Abandonar Run
           </button>
           <button
-            onClick={handleResetAccount}
+            onClick={() => {
+              resetAccount();
+              resetRun();
+              navigate("/");
+            }}
             className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg"
           >
             Resetar Conta
           </button>
         </div>
       </div>
-
       {player && (
         <div className="px-4 py-2 bg-gray-800/80 border-b border-gray-700 flex items-center gap-4 text-sm">
           <div className="flex items-center gap-2">
@@ -157,7 +140,7 @@ export default function MapScreen({
           <span>Nv. {player.level}</span>
           <div className="flex-1 h-2 bg-gray-700 rounded-full">
             <div
-              className="h-2 bg-green-500 rounded-full transition-all"
+              className="h-2 bg-green-500 rounded-full"
               style={{ width: `${(player.currentHp / player.maxHp) * 100}%` }}
             />
           </div>
@@ -180,7 +163,6 @@ export default function MapScreen({
           </div>
         </div>
       )}
-
       <div className="flex-1 w-full">
         <ReactFlow
           nodes={flowNodes}
@@ -188,7 +170,10 @@ export default function MapScreen({
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           defaultEdgeOptions={defaultEdgeOptions}
-          onNodeClick={handleNodeClick}
+          onNodeClick={(_, node) => {
+            const n = nodes.find((x) => x.id === node.id);
+            if (n && n.unlocked && !n.completed) onNodeSelect(node.id);
+          }}
           fitView
           nodesDraggable={false}
           nodesConnectable={false}
@@ -199,7 +184,6 @@ export default function MapScreen({
           <Controls showFitView={false} showInteractive={false} />
         </ReactFlow>
       </div>
-
       <div className="p-4 bg-gray-800 flex justify-between items-center">
         <div>
           {selectedNode && (
@@ -215,16 +199,11 @@ export default function MapScreen({
         <button
           onClick={onProceed}
           disabled={!canProceed}
-          className={`px-6 py-2 rounded-lg font-semibold ${
-            canProceed
-              ? "bg-blue-600 hover:bg-blue-700"
-              : "bg-gray-600 cursor-not-allowed"
-          }`}
+          className={`px-6 py-2 rounded-lg font-semibold ${canProceed ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-600 cursor-not-allowed"}`}
         >
           Prosseguir
         </button>
       </div>
-
       {showDeckViewer && player && (
         <DeckViewerModal
           title="Baralho da Run"
