@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useGameStore } from "../../../stores/gameStore";
+import { useGameStore } from "../../../stores/useGameStore";
 
 export default function GameOverModal() {
   const navigate = useNavigate();

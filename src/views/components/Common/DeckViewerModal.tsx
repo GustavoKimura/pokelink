@@ -1,15 +1,19 @@
 import type { Card } from "../../../models/Card";
+import type { Pokemon } from "../../../models/Pokemon";
+import CardDisplay from "./CardDisplay";
 import { X } from "lucide-react";
 
 interface DeckViewerModalProps {
   title?: string;
   runDeck: Card[];
+  pokemon: Pokemon;
   onClose: () => void;
 }
 
 export default function DeckViewerModal({
   title = "Baralho da Run",
   runDeck,
+  pokemon,
   onClose,
 }: DeckViewerModalProps) {
   return (
@@ -25,13 +29,10 @@ export default function DeckViewerModal({
           {runDeck.length === 0 ? (
             <p className="text-gray-400 text-center py-8">Baralho vazio</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {runDeck.map((card, index) => (
-                <div key={index} className="bg-gray-700 p-3 rounded-lg">
-                  <h4 className="font-bold capitalize">{card.name}</h4>
-                  <p className="text-sm">💥 {card.power}</p>
-                  <p className="text-sm">⚡ {card.energyCost}</p>
-                  <p className="text-xs uppercase">{card.type}</p>
+                <div key={index}>
+                  <CardDisplay card={card} owner={{ pokemon, level: 1 }} />
                 </div>
               ))}
             </div>

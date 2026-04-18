@@ -1,53 +1,19 @@
 import type { Card } from "../../../models/Card";
-import type { PlayerPokemon } from "../../../models/Player";
+import type { PlayerPokemon, PreviousStats } from "../../../models/Player";
 import {
   calculateCardDisplayDamage,
   calculateMaxHp,
   calculateShield,
 } from "../../../services/battleService";
-import { translateType } from "../../../utils/formatters";
+import CardDisplay from "../Common/CardDisplay";
 
 interface LevelUpModalProps {
   player: PlayerPokemon;
-  previousStats: {
-    level: number;
-    maxHp: number;
-    attackPower: number;
-    speed: number;
-    shield: number;
-  };
+  previousStats: PreviousStats;
   options: Card[];
   onSelect: (card: Card) => void;
   onSkip: () => void;
 }
-
-const typeColors: Record<string, string> = {
-  normal: "bg-[#A8A878]",
-  fire: "bg-[#F08030]",
-  water: "bg-[#6890F0]",
-  electric: "bg-[#F8D030]",
-  grass: "bg-[#78C850]",
-  ice: "bg-[#98D8D8]",
-  fighting: "bg-[#C03028]",
-  poison: "bg-[#A040A0]",
-  ground: "bg-[#E0C068]",
-  flying: "bg-[#A890F0]",
-  psychic: "bg-[#F85888]",
-  bug: "bg-[#A8B820]",
-  rock: "bg-[#B8A038]",
-  ghost: "bg-[#705898]",
-  dragon: "bg-[#7038F8]",
-  dark: "bg-[#705848]",
-  steel: "bg-[#B8B8D0]",
-  fairy: "bg-[#E29DE5]",
-  typeless: "bg-[#6B6B6B]",
-};
-
-const damageIconMap: Record<string, string> = {
-  physical: "👊",
-  special: "✨",
-  status: "🔮",
-};
 
 export default function LevelUpModal({
   player,
@@ -151,32 +117,15 @@ export default function LevelUpModal({
         </h3>
         {options.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {options.map((card, index) => {
-              const bgColor = card.typeless
-                ? typeColors.typeless
-                : typeColors[card.type] || "bg-gray-500";
-              const displayDamage = calculateCardDisplayDamage(player, card);
-              const damageIcon = damageIconMap[card.damageClass] || "👊";
-              const translatedType = translateType(card.type);
-              return (
-                <button
-                  key={`${card.id}-${index}`}
-                  onClick={() => onSelect(card)}
-                  className={`${bgColor} text-white rounded-lg p-4 text-left hover:scale-105 transition-transform`}
-                >
-                  <h4 className="font-bold text-lg capitalize mb-2">
-                    {card.name}
-                  </h4>
-                  <p className="text-sm mb-1">
-                    {damageIcon} {displayDamage}
-                  </p>
-                  <p className="text-sm mb-1">⚡ {card.energyCost}</p>
-                  <p className="text-xs uppercase">
-                    {card.typeless ? "Sem Tipo" : translatedType}
-                  </p>
-                </button>
-              );
-            })}
+            {options.map((card, index) => (
+              <button
+                key={`${card.id}-${index}`}
+                onClick={() => onSelect(card)}
+                className="text-left hover:scale-105 transition-transform rounded-lg"
+              >
+                <CardDisplay card={card} owner={player} />
+              </button>
+            ))}
           </div>
         ) : (
           <p className="text-gray-400 text-center py-4">

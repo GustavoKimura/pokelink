@@ -11,7 +11,6 @@ import {
   calculateCardDisplayDamage,
 } from "../../services/battleService";
 import StarterDeckModal from "../components/Modals/StarterDeckModal";
-import { buildInitialDeck } from "../../services/deckService";
 import { BookOpen } from "lucide-react";
 
 export default function StarterSelectionScreen() {
@@ -21,7 +20,7 @@ export default function StarterSelectionScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [showDeckModal, setShowDeckModal] = useState(false);
-  const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
+  const [pokemonForModal, setPokemonForModal] = useState<Pokemon | null>(null);
   const [customDecks, setCustomDecks] = useState<Record<number, Card[]>>({});
 
   useEffect(() => {
@@ -50,9 +49,7 @@ export default function StarterSelectionScreen() {
 
   const handleConfirm = async () => {
     if (selectedId) {
-      const deck =
-        customDecks[selectedId] ||
-        (await buildInitialDeck(startersData[selectedId]));
+      const deck = customDecks[selectedId];
       navigate("/game", { state: { starterId: selectedId, customDeck: deck } });
     }
   };
@@ -60,7 +57,7 @@ export default function StarterSelectionScreen() {
   const handleViewDeck = (id: number) => {
     const pokemon = startersData[id];
     if (pokemon) {
-      setSelectedPokemon(pokemon);
+      setPokemonForModal(pokemon);
       setShowDeckModal(true);
     }
   };
@@ -175,7 +172,7 @@ export default function StarterSelectionScreen() {
                       className="w-full py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center justify-center gap-2"
                     >
                       <BookOpen className="w-4 h-4" />
-                      Ver Baralho Inicial
+                      Gerenciar Baralho
                     </button>
                   </>
                 )}
@@ -200,11 +197,14 @@ export default function StarterSelectionScreen() {
           Confirmar Escolha
         </button>
       </div>
-      {showDeckModal && selectedPokemon && (
+      {showDeckModal && pokemonForModal && (
         <StarterDeckModal
-          pokemon={selectedPokemon}
+          pokemon={pokemonForModal}
           onConfirm={(deck: Card[]) => {
-            setCustomDecks((prev) => ({ ...prev, [selectedPokemon.id]: deck }));
+            setCustomDecks((prev) => ({
+              ...prev,
+              [pokemonForModal.id]: deck,
+            }));
             setShowDeckModal(false);
           }}
           onClose={() => setShowDeckModal(false)}

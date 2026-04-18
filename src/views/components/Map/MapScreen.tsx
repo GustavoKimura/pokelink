@@ -9,20 +9,10 @@ import ReactFlow, {
   Position,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import type { MapNode } from "../../../models/Map";
-import type { PlayerPokemon } from "../../../models/Player";
-import { useGameStore } from "../../../stores/gameStore";
+import { useGameStore } from "../../../stores/useGameStore";
 import { useAccountStore } from "../../../stores/accountStore";
 import DeckViewerModal from "../Common/DeckViewerModal";
 import { BookOpen } from "lucide-react";
-
-interface MapScreenProps {
-  nodes: MapNode[];
-  currentNodeId: string | null;
-  player: PlayerPokemon | null;
-  onNodeSelect: (nodeId: string) => void;
-  onProceed: () => void;
-}
 
 const nodeTypes = {};
 const edgeTypes = {};
@@ -32,16 +22,18 @@ const defaultEdgeOptions = {
   style: { stroke: "#6b7280", strokeWidth: 2 },
 };
 
-export default function MapScreen({
-  nodes,
-  currentNodeId,
-  player,
-  onNodeSelect,
-  onProceed,
-}: MapScreenProps) {
+export default function MapScreen() {
   const navigate = useNavigate();
   const { resetAccount } = useAccountStore();
-  const { resetRun } = useGameStore();
+  const {
+    mapNodes,
+    currentNodeId,
+    player,
+    selectNode,
+    proceedToNode,
+    resetRun,
+  } = useGameStore();
+
   const [showDeckViewer, setShowDeckViewer] = useState(false);
 
   const { flowNodes, flowEdges } = useMemo(() => {
@@ -50,33 +42,32 @@ export default function MapScreen({
       rest: { background: "#10b981", border: "#059669" },
       boss: { background: "#8b5cf6", border: "#7c3aed" },
     };
-    const flowNodes: Node[] = nodes.map((node) => {
-      const label =
-        node.type === "battle"
-          ? `⚔️ Nv.${node.level}`
-          : node.type === "rest"
-            ? "🏕️ Descanso"
-            : `👑 Nv.${node.level}`;
-      return {
-        id: node.id,
-        position: node.position,
-        data: { label },
-        style: {
-          background: nodeTypeStyles[node.type].background,
-          border: `2px solid ${nodeTypeStyles[node.type].border}`,
-          color: "white",
-          borderRadius: "8px",
-          padding: "10px",
-          width: 120,
-          opacity: node.completed ? 0.5 : node.unlocked ? 1 : 0.4,
-          cursor: node.unlocked && !node.completed ? "pointer" : "not-allowed",
-          boxShadow: node.id === currentNodeId ? "0 0 0 3px #fbbf24" : "none",
-        },
-        sourcePosition: Position.Top,
-        targetPosition: Position.Bottom,
-      };
-    });
-    const flowEdges: Edge[] = nodes.flatMap((node) =>
+    const flowNodes: Node[] = mapNodes.map((node) => ({
+      id: node.id,
+      position: node.position,
+      data: {
+        label:
+          node.type === "battle"
+            ? `⚔️ Nv.${node.level}`
+            : node.type === "rest"
+              ? "🏕️ Descanso"
+              : `👑 Nv.${node.level}`,
+      },
+      style: {
+        background: nodeTypeStyles[node.type].background,
+        border: `2px solid ${nodeTypeStyles[node.type].border}`,
+        color: "white",
+        borderRadius: "8px",
+        padding: "10px",
+        width: 120,
+        opacity: node.completed ? 0.5 : node.unlocked ? 1 : 0.4,
+        cursor: node.unlocked && !node.completed ? "pointer" : "not-allowed",
+        boxShadow: node.id === currentNodeId ? "0 0 0 3px #fbbf24" : "none",
+      },
+      sourcePosition: Position.Top,
+      targetPosition: Position.Bottom,
+    }));
+    const flowEdges: Edge[] = mapNodes.flatMap((node) =>
       node.connections.map((targetId) => ({
         id: `${node.id}-${targetId}`,
         source: node.id,
@@ -87,9 +78,9 @@ export default function MapScreen({
       })),
     );
     return { flowNodes, flowEdges };
-  }, [nodes, currentNodeId]);
+  }, [mapNodes, currentNodeId]);
 
-  const selectedNode = nodes.find((n) => n.id === currentNodeId);
+  const selectedNode = mapNodes.find((n) => n.id === currentNodeId);
   const canProceed =
     selectedNode && selectedNode.unlocked && !selectedNode.completed;
 
@@ -171,8 +162,8 @@ export default function MapScreen({
           edgeTypes={edgeTypes}
           defaultEdgeOptions={defaultEdgeOptions}
           onNodeClick={(_, node) => {
-            const n = nodes.find((x) => x.id === node.id);
-            if (n && n.unlocked && !n.completed) onNodeSelect(node.id);
+            const n = mapNodes.find((x) => x.id === node.id);
+            if (n && n.unlocked && !n.completed) selectNode(node.id);
           }}
           fitView
           nodesDraggable={false}
@@ -197,9 +188,13 @@ export default function MapScreen({
           )}
         </div>
         <button
-          onClick={onProceed}
+          onClick={proceedToNode}
           disabled={!canProceed}
-          className={`px-6 py-2 rounded-lg font-semibold ${canProceed ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-600 cursor-not-allowed"}`}
+          className={`px-6 py-2 rounded-lg font-semibold ${
+            canProceed
+              ? "bg-blue-600 hover:bg-blue-700"
+              : "bg-gray-600 cursor-not-allowed"
+          }`}
         >
           Prosseguir
         </button>
@@ -208,6 +203,7 @@ export default function MapScreen({
         <DeckViewerModal
           title="Baralho da Run"
           runDeck={player.runDeck}
+          pokemon={player.pokemon}
           onClose={() => setShowDeckViewer(false)}
         />
       )}

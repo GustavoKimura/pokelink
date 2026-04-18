@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useAccountStore } from "../../../stores/accountStore";
-import { useGameStore } from "../../../stores/gameStore";
+import { useGameStore } from "../../../stores/useGameStore";
 import { VICTORY_XP } from "../../../config/gameConfig";
 
 interface VictoryModalProps {
-  xpEarned: number;
+  xpEarned?: number;
 }
 
 export default function VictoryModal({

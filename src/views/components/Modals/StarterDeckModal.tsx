@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import type { Card } from "../../../models/Card";
 import type { Pokemon } from "../../../models/Pokemon";
 import { buildInitialDeck } from "../../../services/deckService";
-import { calculateCardDisplayDamage } from "../../../services/battleService";
-import { translateType } from "../../../utils/formatters";
+import CardDisplay from "../Common/CardDisplay";
 import { X, Lock, LockOpen, RefreshCw } from "lucide-react";
 
 interface StarterDeckModalProps {
@@ -11,33 +10,6 @@ interface StarterDeckModalProps {
   onConfirm: (deck: Card[]) => void;
   onClose: () => void;
 }
-
-const typeColors: Record<string, string> = {
-  normal: "bg-[#A8A878]",
-  fire: "bg-[#F08030]",
-  water: "bg-[#6890F0]",
-  electric: "bg-[#F8D030]",
-  grass: "bg-[#78C850]",
-  ice: "bg-[#98D8D8]",
-  fighting: "bg-[#C03028]",
-  poison: "bg-[#A040A0]",
-  ground: "bg-[#E0C068]",
-  flying: "bg-[#A890F0]",
-  psychic: "bg-[#F85888]",
-  bug: "bg-[#A8B820]",
-  rock: "bg-[#B8A038]",
-  ghost: "bg-[#705898]",
-  dragon: "bg-[#7038F8]",
-  dark: "bg-[#705848]",
-  steel: "bg-[#B8B8D0]",
-  fairy: "bg-[#E29DE5]",
-  typeless: "bg-[#6B6B6B]",
-};
-
-type MinimalPlayerPokemon = {
-  pokemon: Pokemon;
-  level: number;
-};
 
 export default function StarterDeckModal({
   pokemon,
@@ -90,8 +62,6 @@ export default function StarterDeckModal({
 
   const handleReroll = () => generateDeck(true);
 
-  const samplePlayer: MinimalPlayerPokemon = { pokemon, level: 1 };
-
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
       <div className="bg-gray-800 p-6 rounded-xl max-w-4xl w-full max-h-[80vh] mx-4 flex flex-col">
@@ -112,28 +82,10 @@ export default function StarterDeckModal({
             <div className="flex-1 overflow-y-auto mb-4">
               <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
                 {deck.map((card, index) => {
-                  const bgColor = card.typeless
-                    ? typeColors.typeless
-                    : typeColors[card.type] || "bg-gray-500";
-                  const displayDamage = calculateCardDisplayDamage(
-                    samplePlayer,
-                    card,
-                  );
-                  const damageIcon =
-                    card.damageClass === "physical" ? "👊" : "✨";
                   const isLocked = lockedIndices.has(index);
                   return (
                     <div key={index} className="relative">
-                      <div className={`${bgColor} text-white rounded-lg p-3`}>
-                        <h4 className="font-bold capitalize">{card.name}</h4>
-                        <p className="text-sm">
-                          {damageIcon} {displayDamage}
-                        </p>
-                        <p className="text-sm">⚡ {card.energyCost}</p>
-                        <p className="text-xs uppercase">
-                          {translateType(card.type)}
-                        </p>
-                      </div>
+                      <CardDisplay card={card} owner={{ pokemon, level: 1 }} />
                       <button
                         onClick={() => toggleLock(index)}
                         className="absolute top-1 right-1 p-1 bg-gray-900/50 rounded hover:bg-gray-900"

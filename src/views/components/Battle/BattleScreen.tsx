@@ -1,85 +1,31 @@
-import { useEffect, useRef, useCallback, useState } from "react";
-import type { BattleState } from "../../../models/Battle";
-import type { EnemyPokemon } from "../../../models/Player";
-import type { Card } from "../../../models/Card";
+import { useState } from "react";
+import { useGameStore } from "../../../stores/useGameStore";
 import PokemonStatus from "./PokemonStatus";
 import CardHand from "./CardHand";
 import BattleLog from "./BattleLog";
 import DeckViewerModal from "../Common/DeckViewerModal";
 import { BookOpen } from "lucide-react";
 
-interface BattleScreenProps {
-  state: BattleState;
-  onSelectMove: (move: Card) => void;
-  onSelectTarget: (targetId: string) => void;
-  onCancelTarget: () => void;
-  onEndTurn: () => void;
-  onEnemyTurn: () => void;
-  onBattleEnd: (victory: boolean) => void;
-}
-
-export default function BattleScreen({
-  state,
-  onSelectMove,
-  onSelectTarget,
-  onCancelTarget,
-  onEndTurn,
-  onEnemyTurn,
-  onBattleEnd,
-}: BattleScreenProps) {
-  const { player, enemies, phase, selectingTarget, log, currentTurnIndex } =
-    state;
-  const enemyTurnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+export default function BattleScreen() {
+  const {
+    player,
+    enemies,
+    isTargeting,
+    battleLog,
+    selectCard,
+    selectTarget,
+    cancelTarget,
+    endTurn,
+    turnOrder,
+    currentTurnIndex,
+  } = useGameStore();
   const [showPlayerDeck, setShowPlayerDeck] = useState(false);
   const [showEnemyDeck, setShowEnemyDeck] = useState(false);
 
-  useEffect(() => {
-    if (!player || enemies.length === 0) return;
-    if (player.currentHp <= 0) {
-      onBattleEnd(false);
-      return;
-    }
-    if (enemies.every((e) => e.currentHp <= 0)) {
-      onBattleEnd(true);
-      return;
-    }
-  }, [player, enemies, onBattleEnd]);
-
-  const processEnemyTurn = useCallback(() => {
-    const currentEnemy = state.turnOrder[currentTurnIndex] as
-      | EnemyPokemon
-      | undefined;
-    if (!currentEnemy || currentEnemy === player) {
-      onEndTurn();
-      return;
-    }
-    if (
-      !currentEnemy.hand.some(
-        (move: Card) => move.energyCost <= currentEnemy.energy,
-      )
-    ) {
-      onEndTurn();
-      return;
-    }
-    onEnemyTurn();
-  }, [state, currentTurnIndex, player, onEnemyTurn, onEndTurn]);
-
-  useEffect(() => {
-    if (phase === "enemy_turn") {
-      if (enemyTurnTimerRef.current) clearTimeout(enemyTurnTimerRef.current);
-      enemyTurnTimerRef.current = setTimeout(() => {
-        processEnemyTurn();
-        enemyTurnTimerRef.current = null;
-      }, 800);
-    }
-    return () => {
-      if (enemyTurnTimerRef.current) clearTimeout(enemyTurnTimerRef.current);
-    };
-  }, [phase, currentTurnIndex, processEnemyTurn]);
+  const isPlayerTurn = turnOrder[currentTurnIndex] === player;
 
   if (!player || enemies.length === 0) return null;
 
-  const isPlayerTurn = phase === "battle";
   const currentEnemy = enemies[0];
 
   return (
@@ -95,7 +41,7 @@ export default function BattleScreen({
           </button>
         </div>
         <div className="w-full max-w-2xl bg-gray-800 rounded-lg p-4 mb-8 h-32 overflow-y-auto">
-          <BattleLog messages={log} />
+          <BattleLog messages={battleLog} />
         </div>
         <div className="w-full max-w-md flex justify-center relative">
           <PokemonStatus pokemon={player} isPlayer />
@@ -107,7 +53,7 @@ export default function BattleScreen({
           </button>
         </div>
       </div>
-      {selectingTarget && (
+      {isTargeting && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-gray-800 p-6 rounded-lg">
             <h3 className="text-xl mb-4">Selecione um alvo</h3>
@@ -115,7 +61,7 @@ export default function BattleScreen({
               {enemies.map((enemy) => (
                 <button
                   key={enemy.pokemon.id}
-                  onClick={() => onSelectTarget(String(enemy.pokemon.id))}
+                  onClick={() => selectTarget(enemy.pokemon.id)}
                   className="p-4 bg-gray-700 rounded-lg hover:bg-gray-600"
                 >
                   <img
@@ -128,7 +74,7 @@ export default function BattleScreen({
               ))}
             </div>
             <button
-              onClick={onCancelTarget}
+              onClick={cancelTarget}
               className="mt-4 px-4 py-2 bg-red-600 rounded"
             >
               Cancelar
@@ -143,12 +89,12 @@ export default function BattleScreen({
             cards={player.hand}
             energy={player.energy}
             canPlay={isPlayerTurn}
-            onSelectCard={onSelectMove}
+            onSelectCard={selectCard}
           />
           {isPlayerTurn && (
             <div className="flex justify-center mt-2">
               <button
-                onClick={onEndTurn}
+                onClick={endTurn}
                 className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold shadow-lg"
               >
                 Passar Turno
@@ -157,17 +103,19 @@ export default function BattleScreen({
           )}
         </div>
       </div>
-      {showPlayerDeck && (
+      {showPlayerDeck && player && (
         <DeckViewerModal
           title="Seu Baralho da Run"
           runDeck={player.runDeck}
+          pokemon={player.pokemon}
           onClose={() => setShowPlayerDeck(false)}
         />
       )}
-      {showEnemyDeck && (
+      {showEnemyDeck && currentEnemy && (
         <DeckViewerModal
           title={`Baralho da Run - ${currentEnemy.pokemon.name}`}
           runDeck={currentEnemy.runDeck}
+          pokemon={currentEnemy.pokemon}
           onClose={() => setShowEnemyDeck(false)}
         />
       )}

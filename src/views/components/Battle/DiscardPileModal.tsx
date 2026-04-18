@@ -1,15 +1,17 @@
 import type { Card } from "../../../models/Card";
+import type { Pokemon } from "../../../models/Pokemon";
+import CardDisplay from "../Common/CardDisplay";
 import { X } from "lucide-react";
 
 interface DiscardPileModalProps {
   discardPile: Card[];
-  pokemonName: string;
+  owner: { pokemon: Pokemon; level: number };
   onClose: () => void;
 }
 
 export default function DiscardPileModal({
   discardPile,
-  pokemonName,
+  owner,
   onClose,
 }: DiscardPileModalProps) {
   return (
@@ -17,7 +19,7 @@ export default function DiscardPileModal({
       <div className="bg-gray-800 p-6 rounded-xl max-w-4xl w-full max-h-[80vh] mx-4 flex flex-col">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-yellow-400">
-            Pilha de Descarte - {pokemonName}
+            Pilha de Descarte - {owner.pokemon.name}
           </h2>
           <button onClick={onClose} className="p-1 hover:bg-gray-700 rounded">
             <X className="w-6 h-6" />
@@ -29,16 +31,10 @@ export default function DiscardPileModal({
               Pilha de descarte vazia
             </p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {discardPile.map((card, index) => (
-                <div
-                  key={index}
-                  className="bg-gray-700 p-3 rounded-lg opacity-75"
-                >
-                  <h4 className="font-bold capitalize">{card.name}</h4>
-                  <p className="text-sm">💥 {card.power}</p>
-                  <p className="text-sm">⚡ {card.energyCost}</p>
-                  <p className="text-xs uppercase">{card.type}</p>
+                <div key={index} className="opacity-75">
+                  <CardDisplay card={card} owner={owner} />
                 </div>
               ))}
             </div>
