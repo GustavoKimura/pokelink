@@ -3,12 +3,28 @@ import type { Item } from "../models/Item";
 import type { PlayerPokemon } from "../models/Player";
 import type { ApiEvolutionChain } from "./pokeApi";
 import { getPokemonSpecies, getEvolutionChain, getPokemon } from "./pokeApi";
-import { calculateMaxHp, calculateShield } from "./battleService";
+import {
+  calculateMaxHp,
+  calculateShield,
+  getXpForNextLevel,
+} from "./battleService";
+
+const FORCE_EEVEE_EVOLUTIONS: Record<string, string> = {
+  "leaf-stone": "leafeon",
+  "ice-stone": "glaceon",
+};
 
 export const canEvolveWithItem = async (
   pokemon: Pokemon,
   item: Item,
 ): Promise<Pokemon | null> => {
+  if (pokemon.id === 133 && item.effect.type === "evolution-stone") {
+    const forcedEvolution = FORCE_EEVEE_EVOLUTIONS[item.name];
+    if (forcedEvolution) {
+      return await getPokemon(forcedEvolution);
+    }
+  }
+
   try {
     const species = await getPokemonSpecies(pokemon.id);
     const chainData = await getEvolutionChain(species.evolution_chain.url);
@@ -49,6 +65,8 @@ export const applyItemEffect = async (
   success: boolean;
   evolvedPokemon?: Pokemon;
   updatedTarget?: PlayerPokemon;
+  levelUp?: boolean;
+  healAmount?: number;
 }> => {
   const effect = item.effect;
   if (effect.type === "evolution-stone" || effect.type === "trade-cable") {
@@ -71,6 +89,7 @@ export const applyItemEffect = async (
         updatedTarget: updated,
       };
     }
+    return { success: false };
   }
   if (effect.type === "rare-candy") {
     const newLevel = target.level + 1;
@@ -85,12 +104,24 @@ export const applyItemEffect = async (
         target.pokemon.stats.specialDefense,
         newLevel,
       ),
+      xpToNextLevel: getXpForNextLevel(newLevel),
     };
-    return { success: true, updatedTarget: updated };
+    return { success: true, updatedTarget: updated, levelUp: true };
   }
   if (effect.type === "potion") {
-    const newHp = Math.min(target.maxHp, target.currentHp + effect.healAmount);
-    return { success: true, updatedTarget: { ...target, currentHp: newHp } };
+    if (target.currentHp >= target.maxHp) {
+      return { success: false };
+    }
+    const healAmount = Math.min(
+      effect.healAmount,
+      target.maxHp - target.currentHp,
+    );
+    const newHp = target.currentHp + healAmount;
+    return {
+      success: true,
+      updatedTarget: { ...target, currentHp: newHp },
+      healAmount,
+    };
   }
   return { success: false };
 };

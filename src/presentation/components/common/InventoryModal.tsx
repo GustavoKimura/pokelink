@@ -1,4 +1,5 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { useGameViewModel } from "../../viewmodels/useGameViewModel";
 import { ITEMS_DB } from "../../../domain/models/Item";
 import { X } from "lucide-react";
@@ -29,15 +30,36 @@ export default function InventoryModal({ onClose }: InventoryModalProps) {
     if (!player) return;
     const item = ITEMS_DB[itemId];
     if (!item) return;
+
     if (item.targetType === "pokemon") {
+      if (item.effect.type === "potion" && player.currentHp >= player.maxHp) {
+        toast.error("O HP do Pokémon já está cheio!");
+        return;
+      }
       const result = await applyItemToPokemon(itemId, player);
-      if (result.success && result.evolvedPokemon) {
-        setOldPokemon(player.pokemon);
-        setEvolvedPokemon(result.evolvedPokemon);
-        setShowEvolution(true);
+      if (result.success) {
+        if (item.effect.type === "potion" && result.healAmount) {
+          toast.success(`Poção usada! ${result.healAmount} HP restaurado.`);
+        }
+        if (result.evolvedPokemon) {
+          setOldPokemon(player.pokemon);
+          setEvolvedPokemon(result.evolvedPokemon);
+          setShowEvolution(true);
+        }
+      } else {
+        if (
+          item.effect.type === "evolution-stone" ||
+          item.effect.type === "trade-cable"
+        ) {
+          toast.error("Não surtiu efeito...");
+        }
       }
       setSelectedItem(null);
     } else if (item.targetType === "card") {
+      if (player.runDeck.length <= 1) {
+        toast.error("Não é possível remover a última carta do baralho!");
+        return;
+      }
       setSelectedItem(itemId);
       setShowCardRemover(true);
     }
@@ -48,6 +70,7 @@ export default function InventoryModal({ onClose }: InventoryModalProps) {
     const updatedRunDeck = player.runDeck.filter((c) => c.id !== card.id);
     updatePlayerRunDeck(updatedRunDeck);
     removeItem(selectedItem, 1);
+    toast.success("Carta removida com sucesso!");
     setShowCardRemover(false);
     setSelectedItem(null);
   };

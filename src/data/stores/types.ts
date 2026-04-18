@@ -81,6 +81,8 @@ export interface InventorySlice {
     success: boolean;
     evolvedPokemon?: Pokemon;
     updatedTarget?: PlayerPokemon;
+    levelUp?: boolean;
+    healAmount?: number;
   }>;
   getItemQuantity: (itemId: string) => number;
   awardSkipCardGold: () => void;

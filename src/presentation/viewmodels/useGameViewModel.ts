@@ -5,7 +5,6 @@ export const useGameViewModel = () => {
   const store = useGameStore();
   return {
     ...store,
-    applyItemToPokemon: store.applyItemToPokemon,
     updatePlayerRunDeck: (runDeck: PlayerPokemon["runDeck"]) => {
       const state = useGameStore.getState();
       if (state.player) {
