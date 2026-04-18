@@ -77,6 +77,10 @@ export const createBattleSlice: StoreSlice<BattleSlice> = (set, get) => ({
         player.pokemon.stats.specialDefense,
         player.level,
       ),
+      hand: [],
+      discardPile: [],
+      drawPile: shuffleArray([...player.runDeck]),
+      energy: MAX_ENERGY,
     };
     const turnOrder = [playerWithShield, enemy].sort(
       (a, b) => b.pokemon.stats.speed - a.pokemon.stats.speed,
