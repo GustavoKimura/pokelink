@@ -40,8 +40,10 @@ import {
 interface LevelUpStep {
   type: "level" | "evolution";
   newLevel: number;
-  options?: Card[];
+  player: PlayerPokemon;
+  oldPokemon?: Pokemon;
   evolvedPokemon?: Pokemon;
+  options?: Card[];
   previousStats: PreviousStats;
 }
 
@@ -60,11 +62,15 @@ export default function Game() {
   const [healAmount, setHealAmount] = useState(0);
   const [showEvolution, setShowEvolution] = useState(false);
   const [evolvedPokemon, setEvolvedPokemon] = useState<Pokemon | null>(null);
+  const [oldPokemonForEvolution, setOldPokemonForEvolution] =
+    useState<Pokemon | null>(null);
   const [previousStats, setPreviousStats] = useState<PreviousStats | null>(
     null,
   );
   const [levelUpQueue, setLevelUpQueue] = useState<LevelUpStep[]>([]);
   const [isProcessingQueue, setIsProcessingQueue] = useState(false);
+  const [currentStepPlayer, setCurrentStepPlayer] =
+    useState<PlayerPokemon | null>(null);
   const initialized = useRef(false);
 
   const {
@@ -214,10 +220,13 @@ export default function Game() {
     setLevelUpQueue(rest);
     if (step.type === "evolution") {
       setEvolvedPokemon(step.evolvedPokemon!);
+      setOldPokemonForEvolution(step.oldPokemon!);
+      setCurrentStepPlayer(step.player);
       setShowEvolution(true);
     } else {
       setPreviousStats(step.previousStats);
       setLevelUpOptions(step.options || []);
+      setCurrentStepPlayer(step.player);
       setShowLevelUp(true);
     }
   }, [levelUpQueue, completeNode, setRunPhase, runState.currentNodeId]);
@@ -251,11 +260,15 @@ export default function Game() {
     }
     updatePlayer(updatedPlayer);
     setShowLevelUp(false);
+    setCurrentStepPlayer(null);
     setIsProcessingQueue(false);
   };
 
   const handleEvolutionComplete = () => {
     setShowEvolution(false);
+    setCurrentStepPlayer(null);
+    setEvolvedPokemon(null);
+    setOldPokemonForEvolution(null);
     setIsProcessingQueue(false);
   };
 
@@ -314,6 +327,8 @@ export default function Game() {
         ),
       };
 
+      const oldPokemon = currentPlayer.pokemon;
+
       currentPlayer = {
         ...currentPlayer,
         level: newLevel,
@@ -334,6 +349,8 @@ export default function Game() {
         steps.push({
           type: "evolution",
           newLevel,
+          player: { ...currentPlayer },
+          oldPokemon: oldPokemon,
           evolvedPokemon: evolution,
           previousStats: oldStats,
         });
@@ -359,6 +376,7 @@ export default function Game() {
         steps.push({
           type: "level",
           newLevel,
+          player: { ...currentPlayer },
           options,
           previousStats: oldStats,
         });
@@ -433,9 +451,9 @@ export default function Game() {
       {showRest && (
         <RestModal onContinue={handleRestContinue} healAmount={healAmount} />
       )}
-      {showLevelUp && runState.player && previousStats && (
+      {showLevelUp && currentStepPlayer && previousStats && (
         <LevelUpModal
-          player={runState.player}
+          player={currentStepPlayer}
           previousStats={previousStats}
           options={levelUpOptions}
           onSelect={handleLevelUpComplete}
@@ -443,13 +461,16 @@ export default function Game() {
         />
       )}
       {showVictory && <VictoryModal xpEarned={VICTORY_XP} />}
-      {showEvolution && evolvedPokemon && runState.player && (
-        <EvolutionModal
-          oldPokemon={runState.player.pokemon}
-          newPokemon={evolvedPokemon}
-          onConfirm={handleEvolutionComplete}
-        />
-      )}
+      {showEvolution &&
+        evolvedPokemon &&
+        oldPokemonForEvolution &&
+        currentStepPlayer && (
+          <EvolutionModal
+            oldPokemon={oldPokemonForEvolution}
+            newPokemon={evolvedPokemon}
+            onConfirm={handleEvolutionComplete}
+          />
+        )}
     </>
   );
 }
