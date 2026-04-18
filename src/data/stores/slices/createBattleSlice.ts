@@ -22,15 +22,19 @@ const isPlayerUnit = (
   unit: PlayerPokemon | EnemyPokemon,
 ): unit is PlayerPokemon => "runXp" in unit;
 
+const discardHand = <T extends PlayerPokemon | EnemyPokemon>(unit: T): T => {
+  const newDiscard = [...unit.discardPile, ...unit.hand];
+  return { ...unit, hand: [], discardPile: newDiscard };
+};
+
 const prepareForTurnStart = <T extends PlayerPokemon | EnemyPokemon>(
   unit: T,
 ): T => {
-  const newDiscard = [...unit.discardPile, ...unit.hand];
   const {
     drawn: newHand,
     newDeck: newDrawPile,
     newDiscard: finalDiscard,
-  } = drawCards(unit.drawPile, newDiscard, CARDS_PER_TURN);
+  } = drawCards(unit.drawPile, unit.discardPile, CARDS_PER_TURN);
   return {
     ...unit,
     drawPile: newDrawPile,
@@ -226,7 +230,7 @@ export const createBattleSlice: StoreSlice<BattleSlice> = (set, get) => ({
     }
   },
   endTurn: () => {
-    const { player, enemies } = get();
+    const { player, enemies, turnOrder, currentTurnIndex } = get();
     if (player && player.currentHp <= 0) {
       get().endBattle(false);
       return;
@@ -236,23 +240,47 @@ export const createBattleSlice: StoreSlice<BattleSlice> = (set, get) => ({
       return;
     }
 
-    const nextIndex = (get().currentTurnIndex + 1) % get().turnOrder.length;
-    let nextUnit = get().turnOrder[nextIndex];
+    const currentUnit = turnOrder[currentTurnIndex];
+    const updatedCurrentUnit = discardHand(currentUnit);
+
+    let updatedPlayer = player;
+    let updatedEnemies = [...enemies];
+    let updatedTurnOrder = [...turnOrder];
+
+    if (isPlayerUnit(currentUnit)) {
+      updatedPlayer = updatedCurrentUnit as PlayerPokemon;
+      updatedTurnOrder = updatedTurnOrder.map((u, i) =>
+        i === currentTurnIndex ? updatedCurrentUnit : u,
+      );
+    } else {
+      updatedEnemies = updatedEnemies.map((e) =>
+        e.pokemon.id === currentUnit.pokemon.id
+          ? (updatedCurrentUnit as EnemyPokemon)
+          : e,
+      );
+      updatedTurnOrder = updatedTurnOrder.map((u, i) =>
+        i === currentTurnIndex ? updatedCurrentUnit : u,
+      );
+    }
+
+    const nextIndex = (currentTurnIndex + 1) % updatedTurnOrder.length;
+    let nextUnit = updatedTurnOrder[nextIndex];
     nextUnit = prepareForTurnStart(nextUnit);
-    const newTurnOrder = get().turnOrder.map((u, i) =>
-      i === nextIndex ? nextUnit : u,
-    );
+    updatedTurnOrder[nextIndex] = nextUnit;
+
     const isNextUnitPlayer = isPlayerUnit(nextUnit);
+    if (isNextUnitPlayer) {
+      updatedPlayer = nextUnit as PlayerPokemon;
+    } else {
+      updatedEnemies = updatedEnemies.map((e) =>
+        e.pokemon.id === nextUnit.pokemon.id ? (nextUnit as EnemyPokemon) : e,
+      );
+    }
+
     set({
-      player: isNextUnitPlayer ? (nextUnit as PlayerPokemon) : get().player,
-      enemies: isNextUnitPlayer
-        ? get().enemies
-        : get().enemies.map((e) =>
-            e.pokemon.id === nextUnit.pokemon.id
-              ? (nextUnit as EnemyPokemon)
-              : e,
-          ),
-      turnOrder: newTurnOrder,
+      player: updatedPlayer,
+      enemies: updatedEnemies,
+      turnOrder: updatedTurnOrder,
       currentTurnIndex: nextIndex,
       phase: isNextUnitPlayer ? "battle" : "enemy_turn",
     });
