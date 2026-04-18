@@ -242,6 +242,7 @@ export default function MapScreen() {
           title="Baralho da Run"
           runDeck={player.runDeck}
           pokemon={player.pokemon}
+          level={player.level}
           onClose={() => setShowDeckViewer(false)}
         />
       )}

@@ -134,6 +134,7 @@ export default function BattleScreen() {
           title="Seu Baralho da Run"
           runDeck={player.runDeck}
           pokemon={player.pokemon}
+          level={player.level}
           onClose={() => setShowPlayerDeck(false)}
         />
       )}
@@ -142,6 +143,7 @@ export default function BattleScreen() {
           title={`Baralho da Run - ${currentEnemy.pokemon.name}`}
           runDeck={currentEnemy.runDeck}
           pokemon={currentEnemy.pokemon}
+          level={currentEnemy.level}
           onClose={() => setShowEnemyDeck(false)}
         />
       )}

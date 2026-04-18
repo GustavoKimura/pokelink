@@ -50,6 +50,7 @@ const prepareForTurnStart = <T extends PlayerPokemon | EnemyPokemon>(
 };
 
 export const createBattleSlice: StoreSlice<BattleSlice> = (set, get) => ({
+  battleKey: 0,
   enemies: [],
   turnOrder: [],
   currentTurnIndex: 0,
@@ -311,5 +312,8 @@ export const createBattleSlice: StoreSlice<BattleSlice> = (set, get) => ({
     } else {
       get().endTurn();
     }
+  },
+  refreshBattle: () => {
+    set({ battleKey: get().battleKey + 1 });
   },
 });

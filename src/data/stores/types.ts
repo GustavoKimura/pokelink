@@ -53,6 +53,7 @@ export interface MapSlice {
 }
 
 export interface BattleSlice {
+  battleKey: number;
   enemies: EnemyPokemon[];
   turnOrder: (PlayerPokemon | EnemyPokemon)[];
   currentTurnIndex: number;
@@ -65,6 +66,7 @@ export interface BattleSlice {
   cancelTarget: () => void;
   endTurn: () => void;
   executeEnemyAction: () => void;
+  refreshBattle: () => void;
 }
 
 export interface InventorySlice {

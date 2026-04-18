@@ -21,12 +21,15 @@ export default function GameScreen() {
     levelUpData,
     evolutionData,
     restHealAmount,
+    battleKey,
     initializeRun,
     acknowledgeLevelUp,
     acknowledgeEvolution,
     acknowledgeRest,
+    refreshBattle,
   } = useGameViewModel();
   const initialized = useRef(false);
+  const prevPhaseRef = useRef(phase);
 
   useEffect(() => {
     if (!starterId) {
@@ -38,6 +41,13 @@ export default function GameScreen() {
       initializeRun(starterId, customDeck);
     }
   }, [starterId, customDeck, navigate, initializeRun]);
+
+  useEffect(() => {
+    if (prevPhaseRef.current !== "battle" && phase === "battle") {
+      refreshBattle();
+    }
+    prevPhaseRef.current = phase;
+  }, [phase, refreshBattle]);
 
   useEffect(() => {
     if (phase === "rest" && restHealAmount !== null) {
@@ -80,7 +90,7 @@ export default function GameScreen() {
   return (
     <>
       {isMapPhase && <MapScreen />}
-      {isBattlePhase && <BattleScreen />}
+      {isBattlePhase && <BattleScreen key={battleKey} />}
       {phase === "defeat" && <GameOverModal />}
       {phase === "victory" && <VictoryModal />}
 

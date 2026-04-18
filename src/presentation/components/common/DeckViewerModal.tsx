@@ -7,6 +7,7 @@ interface DeckViewerModalProps {
   title?: string;
   runDeck: Card[];
   pokemon: Pokemon;
+  level: number;
   onClose: () => void;
 }
 
@@ -14,6 +15,7 @@ export default function DeckViewerModal({
   title = "Baralho da Run",
   runDeck,
   pokemon,
+  level,
   onClose,
 }: DeckViewerModalProps) {
   return (
@@ -32,7 +34,7 @@ export default function DeckViewerModal({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {runDeck.map((card, index) => (
                 <div key={index}>
-                  <CardDisplay card={card} owner={{ pokemon, level: 1 }} />
+                  <CardDisplay card={card} owner={{ pokemon, level }} />
                 </div>
               ))}
             </div>

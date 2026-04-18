@@ -81,13 +81,16 @@ export const createInventorySlice: StoreSlice<InventorySlice> = (set, get) => ({
       if (result.updatedTarget) {
         set({ player: result.updatedTarget });
         if (result.evolvedPokemon) {
-          set({
-            phase: "evolution",
-            evolutionData: {
-              oldPokemon: target.pokemon,
-              newPokemon: result.evolvedPokemon,
-            },
-          });
+          const currentPhase = get().phase;
+          if (currentPhase !== "evolution") {
+            set({
+              phase: "evolution",
+              evolutionData: {
+                oldPokemon: target.pokemon,
+                newPokemon: result.evolvedPokemon,
+              },
+            });
+          }
           return {
             success: true,
             evolvedPokemon: result.evolvedPokemon,
@@ -116,14 +119,17 @@ export const createInventorySlice: StoreSlice<InventorySlice> = (set, get) => ({
                   updatedPlayer.level,
                 ),
               };
-              set({
-                player: evolved,
-                phase: "evolution",
-                evolutionData: {
-                  oldPokemon: updatedPlayer.pokemon,
-                  newPokemon: evolution,
-                },
-              });
+              const currentPhase = get().phase;
+              if (currentPhase !== "evolution") {
+                set({
+                  player: evolved,
+                  phase: "evolution",
+                  evolutionData: {
+                    oldPokemon: updatedPlayer.pokemon,
+                    newPokemon: evolution,
+                  },
+                });
+              }
               return {
                 success: true,
                 evolvedPokemon: evolution,
