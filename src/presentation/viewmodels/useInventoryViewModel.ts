@@ -16,7 +16,7 @@ export const useInventoryViewModel = () => {
   const isInBattle = phase === "battle" || phase === "enemy_turn";
 
   const handleUseItem = useCallback(
-    async (itemId: string, onClose: () => void) => {
+    async (itemId: string) => {
       if (!player) return;
       const item = ITEMS_DB[itemId];
       if (!item) return;
@@ -36,7 +36,6 @@ export const useInventoryViewModel = () => {
           if (result.healAmount) {
             toast.success(`Poção usada! ${result.healAmount} HP restaurado.`);
           }
-          onClose();
         } else if (
           item.effect.type === "evolution-stone" ||
           item.effect.type === "trade-cable"
@@ -59,12 +58,12 @@ export const useInventoryViewModel = () => {
   );
 
   const handleCardRemove = useCallback(
-    (cardIndex: number, onClose: () => void) => {
+    (cardIndex: number, onCloseModal: () => void) => {
       removeCardFromDeck(cardIndex);
       removeItem("card-remover", 1);
       toast.success("Carta removida com sucesso!");
       setShowCardRemover(false);
-      onClose();
+      onCloseModal();
     },
     [removeCardFromDeck, removeItem],
   );

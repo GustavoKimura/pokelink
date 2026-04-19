@@ -50,7 +50,7 @@ export default function InventoryModal({ onClose }: InventoryModalProps) {
                     </div>
                     <Button
                       size="sm"
-                      onClick={() => handleUseItem(invItem.itemId, onClose)}
+                      onClick={() => handleUseItem(invItem.itemId)}
                       disabled={isDisabled}
                       variant={isDisabled ? "secondary" : "primary"}
                     >

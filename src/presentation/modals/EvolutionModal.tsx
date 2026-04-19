@@ -25,14 +25,14 @@ export default function EvolutionModal({
           alt={oldPokemon.name}
           className="w-24 h-24 pixelated"
         />
-        <span className="text-4xl">→</span>
+        <span className="text-4xl text-white">→</span>
         <img
           src={newPokemon.sprites.animated.front}
           alt={newPokemon.name}
           className="w-24 h-24 pixelated"
         />
       </div>
-      <p className="text-xl font-semibold capitalize mb-4">
+      <p className="text-xl font-semibold text-white capitalize mb-4">
         {newPokemon.name}!
       </p>
       <Button onClick={onConfirm}>Incrível!</Button>
