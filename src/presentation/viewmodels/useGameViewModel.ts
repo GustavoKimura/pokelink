@@ -1,9 +1,6 @@
 import { useGameStore } from "../../data/stores/useGameStore";
 
 export const useGameViewModel = () => {
-  const { resetRun } = useGameStore((state) => ({
-    resetRun: state.resetRun,
-  }));
-
+  const resetRun = useGameStore((state) => state.resetRun);
   return { resetRun };
 };
