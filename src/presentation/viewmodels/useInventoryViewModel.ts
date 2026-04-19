@@ -58,12 +58,11 @@ export const useInventoryViewModel = () => {
   );
 
   const handleCardRemove = useCallback(
-    (cardIndex: number, onCloseModal: () => void) => {
+    (cardIndex: number, closeCardRemover: () => void) => {
       removeCardFromDeck(cardIndex);
       removeItem("card-remover", 1);
       toast.success("Carta removida com sucesso!");
-      setShowCardRemover(false);
-      onCloseModal();
+      closeCardRemover();
     },
     [removeCardFromDeck, removeItem],
   );

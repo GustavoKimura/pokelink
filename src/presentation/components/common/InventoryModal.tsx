@@ -70,7 +70,9 @@ export default function InventoryModal({ onClose }: InventoryModalProps) {
         <CardRemoverModal
           runDeck={player.runDeck}
           pokemon={player.pokemon}
-          onSelect={(cardIndex) => handleCardRemove(cardIndex, onClose)}
+          onSelect={(cardIndex) =>
+            handleCardRemove(cardIndex, () => setShowCardRemover(false))
+          }
           onClose={() => setShowCardRemover(false)}
         />
       )}
