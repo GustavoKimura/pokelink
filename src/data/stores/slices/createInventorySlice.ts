@@ -7,6 +7,7 @@ import {
   calculateShield,
 } from "../../../domain/services/battleService";
 import { getLevelUpMoveOptions } from "../../../domain/services/deckService";
+import { isPlayerUnit } from "../../../domain/services/turnService";
 
 export const createInventorySlice: StoreSlice<InventorySlice> = (set, get) => ({
   gold: 100,
@@ -54,6 +55,18 @@ export const createInventorySlice: StoreSlice<InventorySlice> = (set, get) => ({
 
     if (result.updatedTarget) {
       set({ player: result.updatedTarget });
+      const { phase, turnOrder } = get();
+      if (phase === "battle" || phase === "enemy_turn") {
+        const updatedTurnOrder = [...turnOrder];
+        const playerIndex = updatedTurnOrder.findIndex((u) => isPlayerUnit(u));
+        if (playerIndex !== -1) {
+          updatedTurnOrder[playerIndex] = {
+            ...result.updatedTarget,
+            shield: result.updatedTarget.shield,
+          };
+          set({ turnOrder: updatedTurnOrder });
+        }
+      }
     }
 
     if (result.evolution) {
