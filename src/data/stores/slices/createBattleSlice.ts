@@ -21,30 +21,8 @@ import {
   discardHand,
   prepareForTurnStart,
   executeAttack,
+  applyAttackUpdates,
 } from "../../../domain/services/turnService";
-
-type BattleUnit = PlayerPokemon | EnemyPokemon;
-
-const applyAttackUpdates = (
-  turnOrder: BattleUnit[],
-  updatedAttacker: BattleUnit,
-  updatedDefender: BattleUnit,
-) => {
-  const newTurnOrder = turnOrder.map((unit) => {
-    if (unit.pokemon.id === updatedAttacker.pokemon.id) return updatedAttacker;
-    if (unit.pokemon.id === updatedDefender.pokemon.id) return updatedDefender;
-    return unit;
-  });
-
-  const newPlayer = newTurnOrder.find(isPlayerUnit) as
-    | PlayerPokemon
-    | undefined;
-  const newEnemies = newTurnOrder.filter(
-    (u) => !isPlayerUnit(u),
-  ) as EnemyPokemon[];
-
-  return { newTurnOrder, newPlayer, newEnemies };
-};
 
 export const createBattleSlice: StoreSlice<BattleSlice> = (set, get) => ({
   battleKey: 0,
