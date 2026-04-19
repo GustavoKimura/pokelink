@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import type { Card } from "../../domain/models/Card";
-import { useGameViewModel } from "../viewmodels/useGameViewModel";
+import { useGameOrchestratorViewModel } from "../viewmodels/useGameOrchestratorViewModel";
 import BattleScreen from "../components/battle/BattleScreen";
 import MapScreen from "../components/map/MapScreen";
 import LevelUpModal from "../modals/LevelUpModal";
@@ -27,7 +27,7 @@ export default function GameScreen() {
     handleAcknowledgeRest,
     refreshBattle,
     executeEnemyAction,
-  } = useGameViewModel();
+  } = useGameOrchestratorViewModel();
   const initialized = useRef(false);
   const prevPhaseRef = useRef(phase);
 

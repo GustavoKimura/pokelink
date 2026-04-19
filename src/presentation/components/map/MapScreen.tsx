@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
 import ReactFlow, {
   Background,
@@ -9,8 +8,7 @@ import ReactFlow, {
   Position,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { useGameViewModel } from "../../viewmodels/useGameViewModel";
-import { useAccountStore } from "../../../data/stores/accountStore";
+import { useMapViewModel } from "../../viewmodels/useMapViewModel";
 import DeckViewerModal from "../common/DeckViewerModal";
 import InventoryModal from "../common/InventoryModal";
 import ShopNodeModal from "./ShopNodeModal";
@@ -25,20 +23,19 @@ const defaultEdgeOptions = {
 };
 
 export default function MapScreen() {
-  const navigate = useNavigate();
-  const { resetAccount } = useAccountStore();
   const {
     mapNodes,
     currentNodeId,
     player,
     gold,
     selectNode,
-    resetRun,
     shopInventory,
     acknowledgeShop,
     setShopInventory,
     handleProceedToNode,
-  } = useGameViewModel();
+    abandonRun,
+    handleFullReset,
+  } = useMapViewModel();
 
   const [showDeckViewer, setShowDeckViewer] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
@@ -124,20 +121,13 @@ export default function MapScreen() {
             </>
           )}
           <button
-            onClick={() => {
-              resetRun();
-              navigate("/");
-            }}
+            onClick={abandonRun}
             className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg"
           >
             Abandonar Run
           </button>
           <button
-            onClick={() => {
-              resetAccount();
-              resetRun();
-              navigate("/");
-            }}
+            onClick={handleFullReset}
             className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg"
           >
             Resetar Conta

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useGameViewModel } from "../../viewmodels/useGameViewModel";
+import { useBattleViewModel } from "../../viewmodels/useBattleViewModel";
 import PokemonStatus from "./PokemonStatus";
 import CardHand from "./CardHand";
 import BattleLog from "./BattleLog";
@@ -20,7 +20,7 @@ export default function BattleScreen() {
     endTurn,
     turnOrder,
     currentTurnIndex,
-  } = useGameViewModel();
+  } = useBattleViewModel();
   const [showPlayerDeck, setShowPlayerDeck] = useState(false);
   const [showEnemyDeck, setShowEnemyDeck] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
