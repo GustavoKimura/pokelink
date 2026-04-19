@@ -1,7 +1,7 @@
 import type { Card } from "../../../domain/models/Card";
 import type { Pokemon } from "../../../domain/models/Pokemon";
-import CardDisplay from "./CardDisplay";
 import PanelModal from "./modal/PanelModal";
+import CardCollection from "./CardCollection";
 
 interface DeckViewerModalProps {
   title?: string;
@@ -20,17 +20,11 @@ export default function DeckViewerModal({
 }: DeckViewerModalProps) {
   return (
     <PanelModal title={title} onClose={onClose}>
-      {runDeck.length === 0 ? (
-        <p className="text-gray-400 text-center py-8">Baralho vazio</p>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {runDeck.map((card, index) => (
-            <div key={index}>
-              <CardDisplay card={card} owner={{ pokemon, level }} />
-            </div>
-          ))}
-        </div>
-      )}
+      <CardCollection
+        cards={runDeck}
+        owner={{ pokemon, level }}
+        emptyMessage="Baralho vazio"
+      />
     </PanelModal>
   );
 }

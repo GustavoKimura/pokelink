@@ -16,7 +16,7 @@ export default function InventoryModal({ onClose }: InventoryModalProps) {
     handleUseItem,
     handleCardRemove,
     setShowCardRemover,
-  } = useInventoryViewModel(onClose);
+  } = useInventoryViewModel();
 
   return (
     <>
@@ -45,7 +45,7 @@ export default function InventoryModal({ onClose }: InventoryModalProps) {
                       </div>
                     </div>
                     <button
-                      onClick={() => handleUseItem(invItem.itemId)}
+                      onClick={() => handleUseItem(invItem.itemId, onClose)}
                       className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
                     >
                       Usar
@@ -64,7 +64,7 @@ export default function InventoryModal({ onClose }: InventoryModalProps) {
         <CardRemoverModal
           runDeck={player.runDeck}
           pokemon={player.pokemon}
-          onSelect={handleCardRemove}
+          onSelect={(cardIndex) => handleCardRemove(cardIndex, onClose)}
           onClose={() => setShowCardRemover(false)}
         />
       )}

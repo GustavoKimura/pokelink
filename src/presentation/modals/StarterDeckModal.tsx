@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import type { Card } from "../../domain/models/Card";
 import type { Pokemon } from "../../domain/models/Pokemon";
 import { buildInitialDeck } from "../../domain/services/deckService";
-import CardDisplay from "../components/common/CardDisplay";
 import PanelModal from "../components/common/modal/PanelModal";
-import { Lock, LockOpen, RefreshCw } from "lucide-react";
+import CardCollection from "../components/common/CardCollection";
+import { RefreshCw } from "lucide-react";
 
 interface StarterDeckModalProps {
   pokemon: Pokemon;
@@ -95,27 +95,13 @@ export default function StarterDeckModal({
           <p className="text-white">Gerando baralho...</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
-          {deck.map((card, index) => {
-            const isLocked = lockedIndices.has(index);
-            return (
-              <div key={index} className="relative">
-                <CardDisplay card={card} owner={{ pokemon, level: 1 }} />
-                <button
-                  onClick={() => toggleLock(index)}
-                  className="absolute top-1 right-1 p-1 bg-gray-900/50 rounded hover:bg-gray-900"
-                  title={isLocked ? "Desafixar carta" : "Fixar carta"}
-                >
-                  {isLocked ? (
-                    <Lock className="w-4 h-4 text-yellow-400" />
-                  ) : (
-                    <LockOpen className="w-4 h-4 text-gray-400" />
-                  )}
-                </button>
-              </div>
-            );
-          })}
-        </div>
+        <CardCollection
+          cards={deck}
+          owner={{ pokemon, level: 1 }}
+          gridClasses="grid grid-cols-1 md:grid-cols-5 gap-2"
+          lockedIndices={lockedIndices}
+          onLockToggle={toggleLock}
+        />
       )}
     </PanelModal>
   );

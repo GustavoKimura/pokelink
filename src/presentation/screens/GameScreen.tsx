@@ -8,6 +8,7 @@ import LevelUpModal from "../modals/LevelUpModal";
 import VictoryModal from "../modals/VictoryModal";
 import GameOverModal from "../modals/GameOverModal";
 import EvolutionModal from "../modals/EvolutionModal";
+import { ENEMY_TURN_DELAY_MS } from "../../domain/config/gameConfig";
 
 export default function GameScreen() {
   const location = useLocation();
@@ -25,6 +26,7 @@ export default function GameScreen() {
     acknowledgeEvolution,
     handleAcknowledgeRest,
     refreshBattle,
+    executeEnemyAction,
   } = useGameViewModel();
   const initialized = useRef(false);
   const prevPhaseRef = useRef(phase);
@@ -52,6 +54,15 @@ export default function GameScreen() {
       handleAcknowledgeRest();
     }
   }, [phase, handleAcknowledgeRest]);
+
+  useEffect(() => {
+    if (phase === "enemy_turn") {
+      const timer = setTimeout(() => {
+        executeEnemyAction();
+      }, ENEMY_TURN_DELAY_MS);
+      return () => clearTimeout(timer);
+    }
+  }, [phase, executeEnemyAction]);
 
   useEffect(() => {
     if (phase === "level_up" || phase === "evolution" || phase === "shop") {

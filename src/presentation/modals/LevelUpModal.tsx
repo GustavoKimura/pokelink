@@ -1,6 +1,6 @@
 import type { Card } from "../../domain/models/Card";
 import type { PlayerPokemon, PreviousStats } from "../../domain/models/Player";
-import CardDisplay from "../components/common/CardDisplay";
+import CardCollection from "../components/common/CardCollection";
 import { usePokemonDisplayStats } from "../hooks/usePokemonDisplayStats";
 
 interface LevelUpModalProps {
@@ -104,24 +104,15 @@ export default function LevelUpModal({
         <h3 className="text-xl font-semibold text-white mb-3">
           Escolha uma nova carta
         </h3>
-        {options.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {options.map((card, index) => (
-              <button
-                key={`${card.id}-${index}`}
-                onClick={() => onSelect(card)}
-                className="text-left hover:scale-105 transition-transform rounded-lg"
-                style={{ pointerEvents: "auto" }}
-              >
-                <CardDisplay card={card} owner={player} />
-              </button>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-400 text-center py-4">
-            Nenhuma carta disponível para aprender.
-          </p>
-        )}
+
+        <CardCollection
+          cards={options}
+          owner={player}
+          onCardClick={(card) => onSelect(card)}
+          gridClasses="grid grid-cols-1 md:grid-cols-3 gap-4"
+          emptyMessage="Nenhuma carta disponível para aprender."
+        />
+
         <div className="flex justify-center gap-4 mt-6">
           <button
             onClick={onSkip}

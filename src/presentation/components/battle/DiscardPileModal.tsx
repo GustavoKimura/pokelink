@@ -1,7 +1,7 @@
 import type { Card } from "../../../domain/models/Card";
 import type { Pokemon } from "../../../domain/models/Pokemon";
-import CardDisplay from "../common/CardDisplay";
 import PanelModal from "../common/modal/PanelModal";
+import CardCollection from "../common/CardCollection";
 
 interface DiscardPileModalProps {
   discardPile: Card[];
@@ -19,19 +19,12 @@ export default function DiscardPileModal({
       title={`Pilha de Descarte - ${owner.pokemon.name}`}
       onClose={onClose}
     >
-      {discardPile.length === 0 ? (
-        <p className="text-gray-400 text-center py-8">
-          Pilha de descarte vazia
-        </p>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {discardPile.map((card, index) => (
-            <div key={index} className="opacity-75">
-              <CardDisplay card={card} owner={owner} />
-            </div>
-          ))}
-        </div>
-      )}
+      <CardCollection
+        cards={discardPile}
+        owner={owner}
+        cardClassName="opacity-75"
+        emptyMessage="Pilha de descarte vazia"
+      />
     </PanelModal>
   );
 }

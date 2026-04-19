@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useGameViewModel } from "../../viewmodels/useGameViewModel";
 import PokemonStatus from "./PokemonStatus";
 import CardHand from "./CardHand";
@@ -6,11 +6,9 @@ import BattleLog from "./BattleLog";
 import DeckViewerModal from "../common/DeckViewerModal";
 import InventoryModal from "../common/InventoryModal";
 import { BookOpen, Backpack } from "lucide-react";
-import { ENEMY_TURN_DELAY_MS } from "../../../domain/config/gameConfig";
 
 export default function BattleScreen() {
   const {
-    phase,
     player,
     enemies,
     isTargeting,
@@ -20,7 +18,6 @@ export default function BattleScreen() {
     selectTarget,
     cancelTarget,
     endTurn,
-    executeEnemyAction,
     turnOrder,
     currentTurnIndex,
   } = useGameViewModel();
@@ -30,15 +27,6 @@ export default function BattleScreen() {
 
   const isPlayerTurn =
     player && turnOrder[currentTurnIndex]?.pokemon.id === player.pokemon.id;
-
-  useEffect(() => {
-    if (phase === "enemy_turn") {
-      const timer = setTimeout(() => {
-        executeEnemyAction();
-      }, ENEMY_TURN_DELAY_MS);
-      return () => clearTimeout(timer);
-    }
-  }, [phase, executeEnemyAction]);
 
   if (!player || enemies.length === 0) return null;
 
