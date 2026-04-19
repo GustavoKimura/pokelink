@@ -1,11 +1,11 @@
-import { useState } from "react";
 import type {
   PlayerPokemon,
   EnemyPokemon,
 } from "../../../domain/models/Player";
-import DiscardPileModal from "./DiscardPileModal";
 import { translateType } from "../../../shared/utils/formatters";
 import { typeColors } from "../../../domain/constants/styleConstants";
+import { useHealthColor } from "../../hooks/useHealthColor";
+import BattleUnitStats from "./BattleUnitStats";
 
 interface PokemonStatusProps {
   pokemon: PlayerPokemon | EnemyPokemon;
@@ -16,8 +16,8 @@ export default function PokemonStatus({
   pokemon,
   isPlayer,
 }: PokemonStatusProps) {
-  const [showDiscard, setShowDiscard] = useState(false);
   const hpPercent = (pokemon.currentHp / pokemon.maxHp) * 100;
+  const healthColor = useHealthColor(pokemon.currentHp, pokemon.maxHp);
   const sprite = isPlayer
     ? pokemon.pokemon.sprites.animated.back
     : pokemon.pokemon.sprites.animated.front;
@@ -48,13 +48,7 @@ export default function PokemonStatus({
           </div>
           <div className="w-full bg-gray-700 rounded-full h-3 mb-1">
             <div
-              className={`h-3 rounded-full transition-all ${
-                hpPercent > 50
-                  ? "bg-green-500"
-                  : hpPercent > 20
-                    ? "bg-yellow-500"
-                    : "bg-red-500"
-              }`}
+              className={`h-3 rounded-full transition-all ${healthColor}`}
               style={{ width: `${hpPercent}%` }}
             />
           </div>
@@ -76,26 +70,9 @@ export default function PokemonStatus({
               </span>
             ))}
           </div>
-          <div className="flex items-center gap-4 text-sm">
-            <p>⚡ {pokemon.energy}/3</p>
-            <p>🎴 {pokemon.drawPile.length}</p>
-            <p>🃏 {pokemon.hand.length}</p>
-            <button
-              onClick={() => setShowDiscard(true)}
-              className="hover:text-gray-300 underline decoration-dotted"
-            >
-              🗑️ {pokemon.discardPile.length}
-            </button>
-          </div>
+          <BattleUnitStats pokemon={pokemon} />
         </div>
       </div>
-      {showDiscard && (
-        <DiscardPileModal
-          discardPile={pokemon.discardPile}
-          owner={pokemon}
-          onClose={() => setShowDiscard(false)}
-        />
-      )}
     </div>
   );
 }

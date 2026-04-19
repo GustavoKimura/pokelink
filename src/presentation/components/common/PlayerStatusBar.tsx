@@ -1,10 +1,13 @@
 import type { PlayerPokemon } from "../../../domain/models/Player";
+import { useHealthColor } from "../../hooks/useHealthColor";
 
 interface PlayerStatusBarProps {
   player: PlayerPokemon;
 }
 
 export default function PlayerStatusBar({ player }: PlayerStatusBarProps) {
+  const healthColor = useHealthColor(player.currentHp, player.maxHp);
+
   return (
     <div className="px-4 py-2 bg-gray-800/80 border-b border-gray-700 flex items-center gap-4 text-sm">
       <div className="flex items-center gap-2">
@@ -18,7 +21,7 @@ export default function PlayerStatusBar({ player }: PlayerStatusBarProps) {
       <span>Nv. {player.level}</span>
       <div className="flex-1 h-2 bg-gray-700 rounded-full">
         <div
-          className="h-2 bg-green-500 rounded-full"
+          className={`h-2 rounded-full ${healthColor}`}
           style={{ width: `${(player.currentHp / player.maxHp) * 100}%` }}
         />
       </div>
