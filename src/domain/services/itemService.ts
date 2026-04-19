@@ -58,17 +58,21 @@ export const canEvolveWithItem = async (
   return null;
 };
 
+interface ItemEffectResult {
+  success: boolean;
+  updatedTarget?: PlayerPokemon;
+  evolution?: { old: Pokemon; new: Pokemon };
+  leveledUp?: { old: PlayerPokemon; new: PlayerPokemon };
+  healAmount?: number;
+}
+
 export const applyItemEffect = async (
   item: Item,
   target: PlayerPokemon,
-): Promise<{
-  success: boolean;
-  evolvedPokemon?: Pokemon;
-  updatedTarget?: PlayerPokemon;
-  levelUp?: boolean;
-  healAmount?: number;
-}> => {
-  const effect = item.effect;
+): Promise<ItemEffectResult> => {
+  if (!item) return { success: false };
+
+  const { effect } = item;
   if (effect.type === "evolution-stone" || effect.type === "trade-cable") {
     const evolution = await canEvolveWithItem(target.pokemon, item);
     if (evolution) {
@@ -85,12 +89,12 @@ export const applyItemEffect = async (
       };
       return {
         success: true,
-        evolvedPokemon: evolution,
         updatedTarget: updated,
+        evolution: { old: target.pokemon, new: evolution },
       };
     }
-    return { success: false };
   }
+
   if (effect.type === "rare-candy") {
     const newLevel = target.level + 1;
     const newMaxHp = calculateMaxHp(target.pokemon.stats.hp, newLevel);
@@ -106,12 +110,15 @@ export const applyItemEffect = async (
       ),
       xpToNextLevel: getXpForNextLevel(newLevel),
     };
-    return { success: true, updatedTarget: updated, levelUp: true };
+    return {
+      success: true,
+      updatedTarget: updated,
+      leveledUp: { old: target, new: updated },
+    };
   }
+
   if (effect.type === "potion") {
-    if (target.currentHp >= target.maxHp) {
-      return { success: false };
-    }
+    if (target.currentHp >= target.maxHp) return { success: false };
     const healAmount = Math.min(
       effect.healAmount,
       target.maxHp - target.currentHp,
@@ -123,5 +130,6 @@ export const applyItemEffect = async (
       healAmount,
     };
   }
+
   return { success: false };
 };

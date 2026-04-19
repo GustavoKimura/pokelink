@@ -1,0 +1,103 @@
+import type { Pokemon } from "../../../domain/models/Pokemon";
+import type { STARTER_OPTIONS } from "../../../domain/config/gameConfig";
+import { usePokemonDisplayStats } from "../../hooks/usePokemonDisplayStats";
+import { BookOpen } from "lucide-react";
+
+interface StarterCardProps {
+  starter: (typeof STARTER_OPTIONS)[0];
+  pokemon?: Pokemon;
+  isSelected: boolean;
+  isUnlocked: boolean;
+  totalXp: number;
+  onSelect: () => void;
+  onViewDeck: () => void;
+}
+
+export default function StarterCard({
+  starter,
+  pokemon,
+  isSelected,
+  isUnlocked,
+  totalXp,
+  onSelect,
+  onViewDeck,
+}: StarterCardProps) {
+  const { maxHp, attackPower, shield, speed } = usePokemonDisplayStats(
+    pokemon,
+    1,
+  );
+
+  return (
+    <div
+      className={`
+        relative rounded-xl overflow-hidden border-2 transition-all duration-200
+        ${
+          isUnlocked
+            ? isSelected
+              ? "border-yellow-400 shadow-lg shadow-yellow-400/30 scale-105"
+              : "border-slate-600 hover:border-slate-400 cursor-pointer"
+            : "border-slate-700 opacity-50 cursor-not-allowed"
+        }
+      `}
+      onClick={onSelect}
+    >
+      {!isUnlocked && (
+        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-10">
+          <span className="text-2xl font-bold mb-2">🔒 Bloqueado</span>
+          <span className="text-sm">
+            {starter.requiredXp - totalXp} XP restantes
+          </span>
+        </div>
+      )}
+      <div className="bg-slate-800 p-4">
+        <div className="flex justify-between items-start mb-2">
+          <h2 className="text-xl font-bold">{starter.displayName}</h2>
+          <span className="text-xs bg-slate-700 px-2 py-1 rounded">
+            Nível 1
+          </span>
+        </div>
+        {pokemon && (
+          <>
+            <div className="flex justify-center my-4">
+              <img
+                src={pokemon.sprites.animated.front}
+                alt={starter.displayName}
+                className="w-32 h-32 object-contain pixelated"
+                onError={(e) => {
+                  e.currentTarget.src = pokemon.sprites.front;
+                }}
+              />
+            </div>
+            <div className="flex gap-1 mb-3">
+              {pokemon.types.map((type) => (
+                <span
+                  key={type}
+                  className="text-xs px-2 py-1 bg-slate-700 rounded-full"
+                >
+                  {type}
+                </span>
+              ))}
+            </div>
+            <p className="text-sm text-gray-300 mb-3">{starter.description}</p>
+            <div className="grid grid-cols-2 gap-1 text-xs mb-3">
+              <div>HP: {maxHp}</div>
+              <div>Ataque: {attackPower}</div>
+              <div>Escudo: {shield}</div>
+              <div>Velocidade: {speed}</div>
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewDeck();
+              }}
+              className="w-full py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center justify-center gap-2"
+            >
+              <BookOpen className="w-4 h-4" />
+              Gerenciar Baralho
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,6 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
-import toast from "react-hot-toast";
 import type { Card } from "../../domain/models/Card";
 import { useGameViewModel } from "../viewmodels/useGameViewModel";
 import BattleScreen from "../components/battle/BattleScreen";
@@ -20,12 +19,11 @@ export default function GameScreen() {
     phase,
     levelUpData,
     evolutionData,
-    restHealAmount,
     battleKey,
     initializeRun,
     acknowledgeLevelUp,
     acknowledgeEvolution,
-    acknowledgeRest,
+    handleAcknowledgeRest,
     refreshBattle,
   } = useGameViewModel();
   const initialized = useRef(false);
@@ -50,15 +48,10 @@ export default function GameScreen() {
   }, [phase, refreshBattle]);
 
   useEffect(() => {
-    if (phase === "rest" && restHealAmount !== null) {
-      if (restHealAmount === 0) {
-        toast("HP já está cheio!", { icon: "💤" });
-      } else {
-        toast.success(`Recuperou ${restHealAmount} de HP!`);
-      }
-      acknowledgeRest();
+    if (phase === "rest") {
+      handleAcknowledgeRest();
     }
-  }, [phase, restHealAmount, acknowledgeRest]);
+  }, [phase, handleAcknowledgeRest]);
 
   useEffect(() => {
     if (phase === "level_up" || phase === "evolution" || phase === "shop") {

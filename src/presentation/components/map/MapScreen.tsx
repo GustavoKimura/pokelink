@@ -33,11 +33,11 @@ export default function MapScreen() {
     player,
     gold,
     selectNode,
-    proceedToNode,
     resetRun,
     shopInventory,
     acknowledgeShop,
     setShopInventory,
+    handleProceedToNode,
   } = useGameViewModel();
 
   const [showDeckViewer, setShowDeckViewer] = useState(false);
@@ -97,15 +97,6 @@ export default function MapScreen() {
   const handleNodeClick = (_: React.MouseEvent, node: Node) => {
     const n = mapNodes.find((x) => x.id === node.id);
     if (n && n.unlocked && !n.completed) selectNode(node.id);
-  };
-
-  const handleProceed = () => {
-    if (!selectedNode) return;
-    if (selectedNode.type === "shop" && selectedNode.shopInventory) {
-      setShopInventory(selectedNode.shopInventory);
-      return;
-    }
-    proceedToNode();
   };
 
   return (
@@ -226,7 +217,7 @@ export default function MapScreen() {
           )}
         </div>
         <button
-          onClick={handleProceed}
+          onClick={handleProceedToNode}
           disabled={!canProceed}
           className={`px-6 py-2 rounded-lg font-semibold ${
             canProceed

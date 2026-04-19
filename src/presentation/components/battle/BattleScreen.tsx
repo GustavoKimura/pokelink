@@ -6,6 +6,7 @@ import BattleLog from "./BattleLog";
 import DeckViewerModal from "../common/DeckViewerModal";
 import InventoryModal from "../common/InventoryModal";
 import { BookOpen, Backpack } from "lucide-react";
+import { ENEMY_TURN_DELAY_MS } from "../../../domain/config/gameConfig";
 
 export default function BattleScreen() {
   const {
@@ -34,7 +35,7 @@ export default function BattleScreen() {
     if (phase === "enemy_turn") {
       const timer = setTimeout(() => {
         executeEnemyAction();
-      }, 1000);
+      }, ENEMY_TURN_DELAY_MS);
       return () => clearTimeout(timer);
     }
   }, [phase, executeEnemyAction]);

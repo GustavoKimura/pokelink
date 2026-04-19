@@ -1,7 +1,10 @@
 import type { Card } from "../models/Card";
 import type { Pokemon } from "../models/Pokemon";
 import { getMove } from "./pokeApi";
-import { STARTING_DECK_SIZE } from "../config/gameConfig";
+import {
+  STARTING_DECK_SIZE,
+  LEVEL_UP_MOVE_OPTIONS_COUNT,
+} from "../config/gameConfig";
 import { createStruggleCard } from "../models/Card";
 
 interface ApiMove {
@@ -96,7 +99,7 @@ export const getLevelUpMoveOptions = async (
 ): Promise<Card[]> => {
   let currentLevel = newLevel;
   const allMoves: Card[] = [];
-  while (currentLevel >= 1 && allMoves.length < 3) {
+  while (currentLevel >= 1 && allMoves.length < LEVEL_UP_MOVE_OPTIONS_COUNT) {
     const levelMoves = pokemon.moves.filter(
       (m) => m.levelLearnedAt === currentLevel,
     );
@@ -112,7 +115,7 @@ export const getLevelUpMoveOptions = async (
   const uniqueMoves = allMoves.filter(
     (m, i, arr) => arr.findIndex((t) => t.id === m.id) === i,
   );
-  return shuffleArray(uniqueMoves).slice(0, 3);
+  return shuffleArray(uniqueMoves).slice(0, LEVEL_UP_MOVE_OPTIONS_COUNT);
 };
 
 export { createStruggleCard };

@@ -1,4 +1,6 @@
-import type { PlayerSlice, StoreSlice } from "../types";
+import type { Card } from "../../../domain/models/Card";
+import type { PlayerPokemon } from "../../../domain/models/Player";
+import type { PlayerSlice, LevelUpStep, StoreSlice } from "../types";
 import { getPokemon } from "../../../domain/services/pokeApi";
 import {
   buildInitialDeck,
@@ -16,12 +18,63 @@ import {
   DEFAULT_REVIVES,
 } from "../../../domain/config/gameConfig";
 
+const processNextStep = (player: PlayerPokemon, queue: LevelUpStep[]) => {
+  if (queue.length === 0) {
+    return {
+      updatedPlayer: player,
+      remainingQueue: [],
+      nextState: { phase: "map" as const },
+    };
+  }
+
+  const [nextStep, ...rest] = queue;
+  const playerSnapshot = nextStep.player;
+  const newMaxHp = calculateMaxHp(
+    playerSnapshot.pokemon.stats.hp,
+    playerSnapshot.level,
+  );
+  const hpRatio = player.currentHp / player.maxHp;
+
+  const updatedPlayer = {
+    ...player,
+    pokemon: playerSnapshot.pokemon,
+    level: playerSnapshot.level,
+    runXp: playerSnapshot.runXp,
+    xpToNextLevel: getXpForNextLevel(playerSnapshot.level),
+    maxHp: newMaxHp,
+    currentHp: Math.max(1, Math.floor(newMaxHp * hpRatio)),
+  };
+
+  const nextState =
+    nextStep.type === "level"
+      ? {
+          phase: "level_up" as const,
+          levelUpData: {
+            options: nextStep.options!,
+            previousStats: nextStep.previousStats,
+            playerSnapshot,
+          },
+        }
+      : {
+          phase: "evolution" as const,
+          evolutionData: {
+            oldPokemon: nextStep.oldPokemon!,
+            newPokemon: nextStep.evolvedPokemon!,
+          },
+        };
+
+  return { updatedPlayer, remainingQueue: rest, nextState };
+};
+
 export const createPlayerSlice: StoreSlice<PlayerSlice> = (set, get) => ({
   player: null,
   levelUpData: null,
   evolutionData: null,
   levelUpQueue: [],
-  initializePlayer: async (starterId, customDeck) => {
+  initializePlayer: async (
+    starterId: number,
+    customDeck?: Card[],
+  ): Promise<PlayerPokemon> => {
     const playerPokemon = await getPokemon(starterId);
     const runDeck = customDeck ?? (await buildInitialDeck(playerPokemon));
     const shuffledDrawPile = shuffleArray([...runDeck]);
@@ -52,61 +105,32 @@ export const createPlayerSlice: StoreSlice<PlayerSlice> = (set, get) => ({
     set({ player: newPlayer });
     return newPlayer;
   },
-  acknowledgeLevelUp: (selectedCard) => {
-    const { player, levelUpQueue } = get();
+  acknowledgeLevelUp: (selectedCard?: Card) => {
+    const { player, levelUpQueue, currentNodeId } = get();
     if (!player) return;
 
-    let updatedPlayer = { ...player };
+    const playerAfterCardChoice = { ...player };
     if (selectedCard) {
-      updatedPlayer.runDeck = [...updatedPlayer.runDeck, selectedCard];
+      playerAfterCardChoice.runDeck = [...player.runDeck, selectedCard];
     } else {
       get().awardSkipCardGold();
     }
 
-    if (levelUpQueue.length === 0) {
-      const { currentNodeId } = get();
-      if (!currentNodeId) return;
-      set({ player: updatedPlayer, levelUpData: null, phase: "map" });
-      get().completeNode(currentNodeId);
-      return;
-    }
-
-    const [nextStep, ...rest] = levelUpQueue;
-    const playerSnapshot = nextStep.player;
-    const newMaxHp = calculateMaxHp(
-      playerSnapshot.pokemon.stats.hp,
-      playerSnapshot.level,
+    const { updatedPlayer, remainingQueue, nextState } = processNextStep(
+      playerAfterCardChoice,
+      levelUpQueue,
     );
-    const hpRatio = updatedPlayer.currentHp / updatedPlayer.maxHp;
-    updatedPlayer = {
-      ...updatedPlayer,
-      pokemon: playerSnapshot.pokemon,
-      level: playerSnapshot.level,
-      runXp: playerSnapshot.runXp,
-      xpToNextLevel: getXpForNextLevel(playerSnapshot.level),
-      maxHp: newMaxHp,
-      currentHp: Math.max(1, Math.floor(newMaxHp * hpRatio)),
-    };
 
-    set({ player: updatedPlayer, levelUpQueue: rest });
+    set({
+      player: updatedPlayer,
+      levelUpQueue: remainingQueue,
+      levelUpData: null,
+      evolutionData: null,
+      ...nextState,
+    });
 
-    if (nextStep.type === "level") {
-      set({
-        phase: "level_up",
-        levelUpData: {
-          options: nextStep.options!,
-          previousStats: nextStep.previousStats,
-          playerSnapshot,
-        },
-      });
-    } else {
-      set({
-        phase: "evolution",
-        evolutionData: {
-          oldPokemon: nextStep.oldPokemon!,
-          newPokemon: nextStep.evolvedPokemon!,
-        },
-      });
+    if (nextState.phase === "map" && currentNodeId) {
+      get().completeNode(currentNodeId);
     }
   },
   acknowledgeEvolution: () => {

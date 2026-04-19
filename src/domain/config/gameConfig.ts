@@ -6,9 +6,16 @@ export const SHIELD_BASE = 4;
 export const STARTING_DECK_SIZE = 5;
 export const CARDS_PER_TURN = 3;
 export const MAX_ENERGY = 3;
+export const LEVEL_UP_MOVE_OPTIONS_COUNT = 3;
 
 export const MAP_ROWS = 10;
 export const MAP_COLS = 4;
+export const NODE_Y_SPACING = 150;
+export const NODE_Y_OFFSET = 100;
+export const NODE_X_SPACING = 200;
+export const NODE_X_OFFSET = 100;
+export const BATTLE_NODE_CHANCE = 0.6;
+export const REST_NODE_CHANCE = 0.2;
 
 export const BOSS_ID = 6;
 
@@ -66,3 +73,5 @@ export const GOLD_ON_SKIP_CARD = 20;
 
 export const SHOP_SLOTS = 4;
 export const SHOP_REFRESH_COST = 10;
+
+export const ENEMY_TURN_DELAY_MS = 1000;
