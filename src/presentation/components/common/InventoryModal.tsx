@@ -17,6 +17,7 @@ export default function InventoryModal({ onClose }: InventoryModalProps) {
     handleUseItem,
     handleCardRemove,
     setShowCardRemover,
+    isInBattle,
   } = useInventoryViewModel();
 
   return (
@@ -31,6 +32,8 @@ export default function InventoryModal({ onClose }: InventoryModalProps) {
               {items.map((invItem) => {
                 const item = ITEMS_DB[invItem.itemId];
                 if (!item) return null;
+                const canUseInBattle = item.id === "potion";
+                const isDisabled = isInBattle && !canUseInBattle;
                 return (
                   <div
                     key={invItem.itemId}
@@ -48,6 +51,8 @@ export default function InventoryModal({ onClose }: InventoryModalProps) {
                     <Button
                       size="sm"
                       onClick={() => handleUseItem(invItem.itemId, onClose)}
+                      disabled={isDisabled}
+                      variant={isDisabled ? "secondary" : "primary"}
                     >
                       Usar
                     </Button>

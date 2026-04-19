@@ -10,13 +10,21 @@ export const useInventoryViewModel = () => {
   const applyItemToPokemon = useGameStore((state) => state.applyItemToPokemon);
   const removeItem = useGameStore((state) => state.removeItem);
   const removeCardFromDeck = useGameStore((state) => state.removeCardFromDeck);
+  const phase = useGameStore((state) => state.phase);
   const [showCardRemover, setShowCardRemover] = useState(false);
+
+  const isInBattle = phase === "battle" || phase === "enemy_turn";
 
   const handleUseItem = useCallback(
     async (itemId: string, onClose: () => void) => {
       if (!player) return;
       const item = ITEMS_DB[itemId];
       if (!item) return;
+
+      if (isInBattle && itemId !== "potion") {
+        toast.error("Este item não pode ser usado durante a batalha!");
+        return;
+      }
 
       if (item.targetType === "pokemon") {
         if (item.effect.type === "potion" && player.currentHp >= player.maxHp) {
@@ -36,6 +44,10 @@ export const useInventoryViewModel = () => {
           toast.error("Não surtiu efeito...");
         }
       } else if (item.targetType === "card") {
+        if (isInBattle) {
+          toast.error("Remover carta não é permitido durante a batalha!");
+          return;
+        }
         if (player.runDeck.length <= 1) {
           toast.error("Não é possível remover a última carta do baralho!");
           return;
@@ -43,7 +55,7 @@ export const useInventoryViewModel = () => {
         setShowCardRemover(true);
       }
     },
-    [player, applyItemToPokemon],
+    [player, applyItemToPokemon, isInBattle],
   );
 
   const handleCardRemove = useCallback(
@@ -78,5 +90,6 @@ export const useInventoryViewModel = () => {
     setShowCardRemover,
     handleUseItem,
     handleCardRemove,
+    isInBattle,
   };
 };
