@@ -4,6 +4,7 @@ import type { Pokemon } from "../../domain/models/Pokemon";
 import { buildInitialDeck } from "../../domain/services/deckService";
 import PanelModal from "../components/common/modal/PanelModal";
 import CardCollection from "../components/common/CardCollection";
+import Button from "../components/ui/Button";
 import { RefreshCw } from "lucide-react";
 
 interface StarterDeckModalProps {
@@ -63,19 +64,16 @@ export default function StarterDeckModal({
   const footer = (
     <>
       <div className="flex justify-between items-center">
-        <button
+        <Button
           onClick={handleReroll}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+          variant="secondary"
+          size="sm"
+          className="gap-2"
         >
           <RefreshCw className="w-4 h-4" />
           Gerar Novamente
-        </button>
-        <button
-          onClick={() => onConfirm(deck)}
-          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold"
-        >
-          Confirmar Baralho
-        </button>
+        </Button>
+        <Button onClick={() => onConfirm(deck)}>Confirmar Baralho</Button>
       </div>
       <p className="text-sm text-gray-400 mt-2">
         Clique no cadeado para fixar uma carta. Cartas fixadas não serão

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import ReactFlow, { Background, Controls, type Node } from "reactflow";
 import "reactflow/dist/style.css";
 import { useMapViewModel } from "../../viewmodels/useMapViewModel";
@@ -7,6 +7,9 @@ import DeckViewerModal from "../common/DeckViewerModal";
 import InventoryModal from "../common/InventoryModal";
 import ShopNodeModal from "./ShopNodeModal";
 import PlayerStatusBar from "../common/PlayerStatusBar";
+import Button from "../ui/Button";
+import IconButton from "../ui/IconButton";
+import Pill from "../ui/Pill";
 import { BookOpen, Backpack } from "lucide-react";
 
 export default function MapScreen() {
@@ -22,19 +25,18 @@ export default function MapScreen() {
     handleProceedToNode,
     abandonRun,
     handleFullReset,
+    canProceed,
+    selectedNode,
+    showDeckViewer,
+    setShowDeckViewer,
+    showInventory,
+    setShowInventory,
   } = useMapViewModel();
-
-  const [showDeckViewer, setShowDeckViewer] = useState(false);
-  const [showInventory, setShowInventory] = useState(false);
 
   const { flowNodes, flowEdges } = useMemo(
     () => transformMapDataToFlowElements(mapNodes, currentNodeId),
     [mapNodes, currentNodeId],
   );
-
-  const selectedNode = mapNodes.find((n) => n.id === currentNodeId);
-  const canProceed =
-    selectedNode && selectedNode.unlocked && !selectedNode.completed;
 
   const handleNodeClick = (_: React.MouseEvent, node: Node) => {
     const mapNode = mapNodes.find((n) => n.id === node.id);
@@ -48,37 +50,25 @@ export default function MapScreen() {
       <div className="p-4 bg-gray-800 flex justify-between items-center">
         <h1 className="text-2xl font-bold text-yellow-400">PokéLink - Mapa</h1>
         <div className="flex gap-2">
-          <span className="flex items-center gap-1 px-3 py-1 bg-yellow-700 rounded-lg">
+          <Pill>
             <span>💰</span> {gold}
-          </span>
+          </Pill>
           {player && (
             <>
-              <button
-                onClick={() => setShowInventory(true)}
-                className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600"
-              >
+              <IconButton onClick={() => setShowInventory(true)}>
                 <Backpack className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setShowDeckViewer(true)}
-                className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600"
-              >
+              </IconButton>
+              <IconButton onClick={() => setShowDeckViewer(true)}>
                 <BookOpen className="w-5 h-5" />
-              </button>
+              </IconButton>
             </>
           )}
-          <button
-            onClick={abandonRun}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg"
-          >
+          <Button variant="danger" size="sm" onClick={abandonRun}>
             Abandonar Run
-          </button>
-          <button
-            onClick={handleFullReset}
-            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg"
-          >
+          </Button>
+          <Button variant="secondary" size="sm" onClick={handleFullReset}>
             Resetar Conta
-          </button>
+          </Button>
         </div>
       </div>
       {player && <PlayerStatusBar player={player} />}
@@ -115,17 +105,9 @@ export default function MapScreen() {
             </p>
           )}
         </div>
-        <button
-          onClick={handleProceedToNode}
-          disabled={!canProceed}
-          className={`px-6 py-2 rounded-lg font-semibold ${
-            canProceed
-              ? "bg-blue-600 hover:bg-blue-700"
-              : "bg-gray-600 cursor-not-allowed"
-          }`}
-        >
+        <Button onClick={handleProceedToNode} disabled={!canProceed}>
           Prosseguir
-        </button>
+        </Button>
       </div>
       {showDeckViewer && player && (
         <DeckViewerModal

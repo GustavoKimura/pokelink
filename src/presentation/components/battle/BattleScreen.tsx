@@ -1,10 +1,12 @@
-import { useState } from "react";
 import { useBattleViewModel } from "../../viewmodels/useBattleViewModel";
 import PokemonStatus from "./PokemonStatus";
 import CardHand from "./CardHand";
 import BattleLog from "./BattleLog";
 import DeckViewerModal from "../common/DeckViewerModal";
 import InventoryModal from "../common/InventoryModal";
+import Button from "../ui/Button";
+import IconButton from "../ui/IconButton";
+import Pill from "../ui/Pill";
 import { BookOpen, Backpack } from "lucide-react";
 
 export default function BattleScreen() {
@@ -18,15 +20,14 @@ export default function BattleScreen() {
     selectTarget,
     cancelTarget,
     endTurn,
-    turnOrder,
-    currentTurnIndex,
+    isPlayerTurn,
+    showPlayerDeck,
+    setShowPlayerDeck,
+    showEnemyDeck,
+    setShowEnemyDeck,
+    showInventory,
+    setShowInventory,
   } = useBattleViewModel();
-  const [showPlayerDeck, setShowPlayerDeck] = useState(false);
-  const [showEnemyDeck, setShowEnemyDeck] = useState(false);
-  const [showInventory, setShowInventory] = useState(false);
-
-  const isPlayerTurn =
-    player && turnOrder[currentTurnIndex]?.pokemon.id === player.pokemon.id;
 
   if (!player || enemies.length === 0) return null;
 
@@ -35,37 +36,34 @@ export default function BattleScreen() {
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
       <div className="absolute top-4 right-4 z-10 flex gap-2">
-        <div className="flex items-center gap-1 px-3 py-1 bg-yellow-700 rounded-lg">
+        <Pill>
           <span>💰</span> {gold}
-        </div>
-        <button
-          onClick={() => setShowInventory(true)}
-          className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600"
-        >
+        </Pill>
+        <IconButton onClick={() => setShowInventory(true)}>
           <Backpack className="w-5 h-5" />
-        </button>
+        </IconButton>
       </div>
       <div className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-md flex justify-center mb-8 relative">
           <PokemonStatus pokemon={currentEnemy} isPlayer={false} />
-          <button
+          <IconButton
             onClick={() => setShowEnemyDeck(true)}
-            className="absolute top-2 right-2 p-1 bg-gray-700 rounded hover:bg-gray-600 z-10"
+            className="absolute top-2 right-2 p-1"
           >
             <BookOpen className="w-4 h-4" />
-          </button>
+          </IconButton>
         </div>
         <div className="w-full max-w-2xl bg-gray-800 rounded-lg p-4 mb-8 h-32 overflow-y-auto">
           <BattleLog messages={battleLog} />
         </div>
         <div className="w-full max-w-md flex justify-center relative">
           <PokemonStatus pokemon={player} isPlayer />
-          <button
+          <IconButton
             onClick={() => setShowPlayerDeck(true)}
-            className="absolute top-2 right-2 p-1 bg-gray-700 rounded hover:bg-gray-600 z-10"
+            className="absolute top-2 right-2 p-1"
           >
             <BookOpen className="w-4 h-4" />
-          </button>
+          </IconButton>
         </div>
       </div>
       {isTargeting && (
@@ -88,12 +86,14 @@ export default function BattleScreen() {
                 </button>
               ))}
             </div>
-            <button
+            <Button
               onClick={cancelTarget}
-              className="mt-4 px-4 py-2 bg-red-600 rounded"
+              variant="danger"
+              size="sm"
+              className="mt-4"
             >
               Cancelar
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -103,17 +103,12 @@ export default function BattleScreen() {
             player={player}
             cards={player.hand}
             energy={player.energy}
-            canPlay={!!isPlayerTurn}
+            canPlay={isPlayerTurn}
             onSelectCard={selectCard}
           />
           {isPlayerTurn && (
             <div className="flex justify-center mt-2">
-              <button
-                onClick={endTurn}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold shadow-lg"
-              >
-                Passar Turno
-              </button>
+              <Button onClick={endTurn}>Passar Turno</Button>
             </div>
           )}
         </div>

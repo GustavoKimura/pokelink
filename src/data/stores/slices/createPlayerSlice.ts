@@ -90,4 +90,11 @@ export const createPlayerSlice: StoreSlice<PlayerSlice> = (set, get) => ({
     set({ evolutionData: null });
     get().acknowledgeLevelUp();
   },
+  removeCardFromDeck: (cardIndex) => {
+    const { player } = get();
+    if (!player || cardIndex < 0 || cardIndex >= player.runDeck.length) return;
+    const updatedRunDeck = [...player.runDeck];
+    updatedRunDeck.splice(cardIndex, 1);
+    set({ player: { ...player, runDeck: updatedRunDeck } });
+  },
 });

@@ -37,6 +37,7 @@ export interface PlayerSlice {
   ) => Promise<PlayerPokemon>;
   acknowledgeLevelUp: (selectedCard?: Card) => void;
   acknowledgeEvolution: () => void;
+  removeCardFromDeck: (cardIndex: number) => void;
 }
 
 export interface MapSlice {

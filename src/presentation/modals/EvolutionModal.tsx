@@ -1,5 +1,6 @@
 import type { Pokemon } from "../../domain/models/Pokemon";
 import CenteredModal from "../components/common/modal/CenteredModal";
+import Button from "../components/ui/Button";
 
 interface EvolutionModalProps {
   oldPokemon: Pokemon;
@@ -34,12 +35,7 @@ export default function EvolutionModal({
       <p className="text-xl font-semibold capitalize mb-4">
         {newPokemon.name}!
       </p>
-      <button
-        onClick={onConfirm}
-        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold"
-      >
-        Incrível!
-      </button>
+      <Button onClick={onConfirm}>Incrível!</Button>
     </CenteredModal>
   );
 }

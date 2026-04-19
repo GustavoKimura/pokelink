@@ -2,6 +2,7 @@ import { useInventoryViewModel } from "../../viewmodels/useInventoryViewModel";
 import { ITEMS_DB } from "../../../domain/models/Item";
 import CardRemoverModal from "../../modals/CardRemoverModal";
 import PanelModal from "./modal/PanelModal";
+import Button from "../ui/Button";
 
 interface InventoryModalProps {
   onClose: () => void;
@@ -44,12 +45,12 @@ export default function InventoryModal({ onClose }: InventoryModalProps) {
                         </p>
                       </div>
                     </div>
-                    <button
+                    <Button
+                      size="sm"
                       onClick={() => handleUseItem(invItem.itemId, onClose)}
-                      className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
                     >
                       Usar
-                    </button>
+                    </Button>
                   </div>
                 );
               })}

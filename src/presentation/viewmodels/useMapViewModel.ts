@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { useGameStore } from "../../data/stores/useGameStore";
 import { useAccountStore } from "../../data/stores/accountStore";
 import { useNavigate } from "react-router-dom";
 
 export const useMapViewModel = () => {
   const navigate = useNavigate();
+  const [showDeckViewer, setShowDeckViewer] = useState(false);
+  const [showInventory, setShowInventory] = useState(false);
+
   const {
     mapNodes,
     currentNodeId,
@@ -29,8 +33,11 @@ export const useMapViewModel = () => {
   }));
   const { resetAccount } = useAccountStore();
 
+  const selectedNode = mapNodes.find((n) => n.id === currentNodeId);
+  const canProceed =
+    selectedNode && selectedNode.unlocked && !selectedNode.completed;
+
   const handleProceedToNode = () => {
-    const selectedNode = mapNodes.find((n) => n.id === currentNodeId);
     if (!selectedNode) return;
 
     if (selectedNode.type === "shop" && selectedNode.shopInventory) {
@@ -62,5 +69,11 @@ export const useMapViewModel = () => {
     handleProceedToNode,
     abandonRun,
     handleFullReset,
+    selectedNode,
+    canProceed,
+    showDeckViewer,
+    setShowDeckViewer,
+    showInventory,
+    setShowInventory,
   };
 };

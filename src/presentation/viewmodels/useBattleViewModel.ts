@@ -1,6 +1,11 @@
+import { useState } from "react";
 import { useGameStore } from "../../data/stores/useGameStore";
 
 export const useBattleViewModel = () => {
+  const [showPlayerDeck, setShowPlayerDeck] = useState(false);
+  const [showEnemyDeck, setShowEnemyDeck] = useState(false);
+  const [showInventory, setShowInventory] = useState(false);
+
   const {
     player,
     enemies,
@@ -27,6 +32,10 @@ export const useBattleViewModel = () => {
     currentTurnIndex: state.currentTurnIndex,
   }));
 
+  const isPlayerTurn = !!(
+    player && turnOrder[currentTurnIndex]?.pokemon.id === player.pokemon.id
+  );
+
   return {
     player,
     enemies,
@@ -37,7 +46,12 @@ export const useBattleViewModel = () => {
     selectTarget,
     cancelTarget,
     endTurn,
-    turnOrder,
-    currentTurnIndex,
+    isPlayerTurn,
+    showPlayerDeck,
+    setShowPlayerDeck,
+    showEnemyDeck,
+    setShowEnemyDeck,
+    showInventory,
+    setShowInventory,
   };
 };

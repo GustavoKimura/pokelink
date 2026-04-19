@@ -5,14 +5,19 @@ import { ITEMS_DB } from "../../domain/models/Item";
 import type { InventoryItem } from "../../domain/models/Item";
 
 export const useInventoryViewModel = () => {
-  const { player, inventory, applyItemToPokemon, removeItem } = useGameStore(
-    (state) => ({
-      player: state.player,
-      inventory: state.inventory,
-      applyItemToPokemon: state.applyItemToPokemon,
-      removeItem: state.removeItem,
-    }),
-  );
+  const {
+    player,
+    inventory,
+    applyItemToPokemon,
+    removeItem,
+    removeCardFromDeck,
+  } = useGameStore((state) => ({
+    player: state.player,
+    inventory: state.inventory,
+    applyItemToPokemon: state.applyItemToPokemon,
+    removeItem: state.removeItem,
+    removeCardFromDeck: state.removeCardFromDeck,
+  }));
   const [showCardRemover, setShowCardRemover] = useState(false);
 
   const handleUseItem = async (itemId: string, onClose: () => void) => {
@@ -47,12 +52,7 @@ export const useInventoryViewModel = () => {
   };
 
   const handleCardRemove = (cardIndex: number, onClose: () => void) => {
-    if (!player || cardIndex < 0 || cardIndex >= player.runDeck.length) return;
-
-    const updatedRunDeck = [...player.runDeck];
-    updatedRunDeck.splice(cardIndex, 1);
-
-    useGameStore.setState({ player: { ...player, runDeck: updatedRunDeck } });
+    removeCardFromDeck(cardIndex);
     removeItem("card-remover", 1);
     toast.success("Carta removida com sucesso!");
     setShowCardRemover(false);

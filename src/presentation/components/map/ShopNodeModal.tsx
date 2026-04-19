@@ -3,6 +3,7 @@ import { ITEMS_DB } from "../../../domain/models/Item";
 import { RefreshCw } from "lucide-react";
 import { SHOP_REFRESH_COST } from "../../../domain/config/gameConfig";
 import PanelModal from "../common/modal/PanelModal";
+import Button from "../ui/Button";
 
 interface ShopNodeModalProps {
   inventory: string[];
@@ -26,18 +27,17 @@ export default function ShopNodeModal({
   const footer = (
     <div className="flex justify-between items-center">
       <span className="text-lg text-yellow-300">💰 {gold}</span>
-      <button
+      <Button
         onClick={handleRefresh}
         disabled={!canAffordRefresh}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
-          canAffordRefresh
-            ? "bg-purple-600 hover:bg-purple-700"
-            : "bg-gray-600 cursor-not-allowed"
-        }`}
+        size="sm"
+        className="gap-2"
+        variant="secondary"
+        style={{ backgroundColor: "#8b5cf6" }}
       >
         <RefreshCw className="w-4 h-4" />
         {refreshed ? "Atualizado" : `Atualizar (${SHOP_REFRESH_COST}💰)`}
-      </button>
+      </Button>
     </div>
   );
 
@@ -55,17 +55,15 @@ export default function ShopNodeModal({
               <h3 className="font-bold text-lg">{item.displayName}</h3>
               <p className="text-sm text-gray-300 mb-2">{item.description}</p>
               <p className="text-yellow-400 mb-3">💰 {item.price}</p>
-              <button
+              <Button
                 onClick={() => handleBuy(itemId, index)}
                 disabled={!canAfford}
-                className={`w-full py-2 rounded-lg font-semibold ${
-                  canAfford
-                    ? "bg-blue-600 hover:bg-blue-700"
-                    : "bg-gray-500 cursor-not-allowed"
-                }`}
+                size="sm"
+                className="w-full"
+                variant={canAfford ? "primary" : "secondary"}
               >
                 {isPurchased ? "Comprado" : "Comprar"}
-              </button>
+              </Button>
             </div>
           );
         })}

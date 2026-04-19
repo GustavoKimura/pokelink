@@ -2,6 +2,7 @@ import type { Card } from "../../domain/models/Card";
 import type { PlayerPokemon, PreviousStats } from "../../domain/models/Player";
 import CardCollection from "../components/common/CardCollection";
 import { usePokemonDisplayStats } from "../hooks/usePokemonDisplayStats";
+import Button from "../components/ui/Button";
 
 interface LevelUpModalProps {
   player: PlayerPokemon;
@@ -114,13 +115,13 @@ export default function LevelUpModal({
         />
 
         <div className="flex justify-center gap-4 mt-6">
-          <button
+          <Button
             onClick={onSkip}
-            className="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg font-semibold text-white"
+            variant="secondary"
             style={{ pointerEvents: "auto" }}
           >
             Pular
-          </button>
+          </Button>
         </div>
         <p className="text-sm text-gray-400 mt-4 text-center">
           A carta escolhida será adicionada ao seu baralho permanentemente nesta

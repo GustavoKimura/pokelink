@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Button from "../components/ui/Button";
 
 export default function HomeScreen() {
   return (
@@ -8,24 +9,21 @@ export default function HomeScreen() {
         Pokémon Roguelike Multiplayer
       </p>
       <div className="flex gap-4">
-        <Link
-          to="/select"
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors"
-        >
+        <Button as={Link} to="/select">
           Jogar Solo
-        </Link>
-        <button
-          className="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition-colors"
+        </Button>
+        <Button
           disabled
+          style={{ backgroundColor: "#16a34a", cursor: "not-allowed" }}
         >
           Criar Sala (em breve)
-        </button>
-        <button
-          className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition-colors"
+        </Button>
+        <Button
           disabled
+          style={{ backgroundColor: "#8b5cf6", cursor: "not-allowed" }}
         >
           Entrar em Sala (em breve)
-        </button>
+        </Button>
       </div>
       <p className="mt-8 text-sm text-gray-500">Versão MVP</p>
     </div>

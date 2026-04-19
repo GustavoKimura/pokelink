@@ -1,37 +1,24 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { STARTER_OPTIONS } from "../../domain/config/gameConfig";
-import type { Card } from "../../domain/models/Card";
-import type { Pokemon } from "../../domain/models/Pokemon";
-import { useAccountStore } from "../../data/stores/accountStore";
 import { useStarterSelectionViewModel } from "../viewmodels/useStarterSelectionViewModel";
 import StarterDeckModal from "../modals/StarterDeckModal";
 import StarterCard from "../components/starters/StarterCard";
+import Button from "../components/ui/Button";
+import { STARTER_OPTIONS } from "../../domain/config/gameConfig";
 
 export default function StarterSelectionScreen() {
-  const navigate = useNavigate();
-  const { totalXp } = useAccountStore();
-  const { startersData, loading, unlockedStarters } =
-    useStarterSelectionViewModel();
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [showDeckModal, setShowDeckModal] = useState(false);
-  const [pokemonForModal, setPokemonForModal] = useState<Pokemon | null>(null);
-  const [customDecks, setCustomDecks] = useState<Record<number, Card[]>>({});
-
-  const handleConfirm = () => {
-    if (selectedId) {
-      const deck = customDecks[selectedId];
-      navigate("/game", { state: { starterId: selectedId, customDeck: deck } });
-    }
-  };
-
-  const handleViewDeck = (id: number) => {
-    const pokemon = startersData[id];
-    if (pokemon) {
-      setPokemonForModal(pokemon);
-      setShowDeckModal(true);
-    }
-  };
+  const {
+    totalXp,
+    startersData,
+    loading,
+    unlockedStarters,
+    selectedId,
+    handleSelectStarter,
+    handleConfirm,
+    showDeckModal,
+    pokemonForModal,
+    handleViewDeck,
+    handleSaveCustomDeck,
+    handleCloseDeckModal,
+  } = useStarterSelectionViewModel();
 
   if (loading) {
     return (
@@ -60,39 +47,27 @@ export default function StarterSelectionScreen() {
               isSelected={selectedId === starter.id}
               isUnlocked={unlocked}
               totalXp={totalXp}
-              onSelect={() => unlocked && setSelectedId(starter.id)}
+              onSelect={() => handleSelectStarter(starter.id)}
               onViewDeck={() => handleViewDeck(starter.id)}
             />
           );
         })}
       </div>
       <div className="mt-8 text-center">
-        <button
+        <Button
           onClick={handleConfirm}
           disabled={!selectedId}
-          className={`
-            px-8 py-3 rounded-lg font-semibold text-lg transition-colors
-            ${
-              selectedId
-                ? "bg-yellow-500 hover:bg-yellow-600 text-slate-900"
-                : "bg-slate-700 text-slate-400 cursor-not-allowed"
-            }
-          `}
+          variant="warning"
+          size="lg"
         >
           Confirmar Escolha
-        </button>
+        </Button>
       </div>
       {showDeckModal && pokemonForModal && (
         <StarterDeckModal
           pokemon={pokemonForModal}
-          onConfirm={(deck: Card[]) => {
-            setCustomDecks((prev) => ({
-              ...prev,
-              [pokemonForModal.id]: deck,
-            }));
-            setShowDeckModal(false);
-          }}
-          onClose={() => setShowDeckModal(false)}
+          onConfirm={handleSaveCustomDeck}
+          onClose={handleCloseDeckModal}
         />
       )}
     </div>

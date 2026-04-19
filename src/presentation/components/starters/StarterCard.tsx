@@ -2,6 +2,7 @@ import type { Pokemon } from "../../../domain/models/Pokemon";
 import type { STARTER_OPTIONS } from "../../../domain/config/gameConfig";
 import { usePokemonDisplayStats } from "../../hooks/usePokemonDisplayStats";
 import { BookOpen } from "lucide-react";
+import Button from "../ui/Button";
 
 interface StarterCardProps {
   starter: (typeof STARTER_OPTIONS)[0];
@@ -85,16 +86,18 @@ export default function StarterCard({
               <div>Escudo: {shield}</div>
               <div>Velocidade: {speed}</div>
             </div>
-            <button
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 onViewDeck();
               }}
-              className="w-full py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center justify-center gap-2"
+              variant="secondary"
+              size="sm"
+              className="w-full gap-2"
             >
               <BookOpen className="w-4 h-4" />
               Gerenciar Baralho
-            </button>
+            </Button>
           </>
         )}
       </div>
